@@ -1,32 +1,34 @@
 # =============================================================================
-# build_stints.R  --  reconstruct lineup STINTS (+ exact possessions) from PBP
+# build_stints.R  --  RAPM stint data from PBP (lean: points / possessions / minutes)
 # -----------------------------------------------------------------------------
 # Reads each season bundle data/el_<scode>.rds, takes its $pbp, and for every game
 # rebuilds the 5-on-5 lineups by walking the substitutions, cutting a new STINT
 # whenever the 10 players on court change. Possessions are counted event-by-event
-# with the EXACT (FIBA/EuroLeague) rules documented in config.R - no 0.44*FTA.
+# with the EXACT (FIBA/EuroLeague) rules in config.R - no 0.44*FTA.
 #
-#   in : data/el_<scode>.rds         (the committed season bundles; $pbp + $fixtures)
-#   out: analysis/stints_<scode>.rds  one row per stint:
+# This is the MODEL input for RAPM: just what the regression needs - the two
+# lineups, points for/against, possessions for/against, and minutes.
+#
+#   in : data/el_<scode>.rds          ($pbp + $fixtures)
+#   out: stints/stints_<scode>.rds    one row per stint (home = team, away = opp):
 #        GAME_ID, FIXTURE_ID, SEASON_CODE, QUARTER, STINT, HOME_CODE, AWAY_CODE,
-#        H1..H5, A1..A5, SEC, POSS_HOME, POSS_AWAY, PTS_HOME, PTS_AWAY, OK
-#        (OK = TRUE when both lineups had exactly 5 players - the integrity flag.)
+#        H1..H5 (team 5), A1..A5 (opponent 5), SEC,
+#        POSS, OPP_POSS,  PTS, OPP_PTS,  OK
+#        (OK = TRUE when both lineups had exactly 5 players - filter on it for RAPM.)
 #
-# Runs UNCHANGED locally and in a GitHub Action (needs only config.R + the bundles):
-#   Rscript scrapers/build_stints.R                 # FULL: every el_*.rds in data/
-#   Rscript scrapers/build_stints.R E2024 E2025     # FULL: these seasons
-#   Rscript scrapers/build_stints.R incremental      # INCREMENTAL: current season only,
-#                                                    #   add stints for games not yet done
-#   Rscript scrapers/build_stints.R incremental E2026
+# Runs UNCHANGED locally and in CI (needs only config.R + the bundles):
+#   Rscript analysis/build_stints.R                 # FULL: every el_*.rds in data/
+#   Rscript analysis/build_stints.R E2024 E2025     # FULL: these seasons
+#   Rscript analysis/build_stints.R incremental      # INCREMENTAL: current season, new games
+#   Rscript analysis/build_stints.R incremental E2026
 # =============================================================================
 
 source("scrapers/config.R")
 suppressMessages(library(dplyr))
 
-# Stint tables live in analysis/ (the source el_*.rds bundles stay in data/).
-ANALYSIS_DIR = "analysis"
-dir.create(ANALYSIS_DIR, showWarnings = FALSE, recursive = TRUE)
-stints_path = function(scode) file.path(ANALYSIS_DIR, paste0("stints_", scode, ".rds"))
+STINTS_DIR = "stints"
+dir.create(STINTS_DIR, showWarnings = FALSE, recursive = TRUE)
+stints_path = function(scode) file.path(STINTS_DIR, paste0("stints_", scode, ".rds"))
 
 QLEN = c(FirstQuarter = 600L, SecondQuarter = 600L, ThirdQuarter = 600L,
          ForthQuarter = 600L, ExtraTime = 300L, ExtraTime2 = 300L,
@@ -34,8 +36,7 @@ QLEN = c(FirstQuarter = 600L, SecondQuarter = 600L, ThirdQuarter = 600L,
 
 `%||%` = function(a, b) if (is.null(a) || length(a) == 0) b else a
 
-# "MM:SS" -> seconds remaining in the quarter; "" -> NA
-.clock_sec = function(mt) {
+.clock_sec = function(mt) {                              # "MM:SS" -> seconds remaining; "" -> NA
   mt = trimws(mt); out = rep(NA_real_, length(mt))
   ok = grepl("^[0-9]+:[0-9]{2}$", mt)
   if (any(ok)) {
@@ -44,13 +45,13 @@ QLEN = c(FirstQuarter = 600L, SecondQuarter = 600L, ThirdQuarter = 600L,
   }
   out
 }
-.ffill = function(x) {                                   # carry last non-NA forward
+.ffill = function(x) {
   pos = cummax(ifelse(!is.na(x), seq_along(x), 0L))
   ifelse(pos == 0L, NA_real_, x[ifelse(pos == 0L, 1L, pos)])
 }
 
-# ---- per-quarter starting five: first 5 players per team whose first event is a
-#      non-IN action (or an OUT) - i.e. they were on court before being subbed in.
+# per-quarter starting five: first 5 players per team whose first event is a
+# non-IN action (or an OUT) - i.e. they were on court before being subbed in.
 .infer_starters = function(qe) {
   starters = character(0); subbed_in = character(0)
   for (i in seq_len(nrow(qe))) {
@@ -62,29 +63,24 @@ QLEN = c(FirstQuarter = 600L, SecondQuarter = 600L, ThirdQuarter = 600L,
   head(starters, 5)
 }
 
-# ---- possession-end team per event (game-level, exact rules from config.R) ----
+# possession-end team per event (exact rules from config.R)
 .poss_end = function(g, home, away) {
   opp = function(t) ifelse(t == home, away, home)
   pt  = g$PLAYTYPE; tm = g$CODETEAM; pid = g$PLAYER_ID; clk = g$MARKERTIME
   n = nrow(g)
-  is_ft = pt %in% c("FTM", "FTA")                        # free-throw trips: same player, same clock
-  newrun = is_ft & !(is_ft & c(FALSE, is_ft[-n]) &
-                     pid == c("", pid[-n]) & clk == c("", clk[-n]))
+  is_ft = pt %in% c("FTM", "FTA")                        # FT trips: same player, same clock
+  newrun = is_ft & !(is_ft & c(FALSE, is_ft[-n]) & pid == c("", pid[-n]) & clk == c("", clk[-n]))
   runid = cumsum(newrun) * is_ft
   trip_size = rep(0L, n)
   if (any(is_ft)) { sz = tapply(rep(1L, sum(is_ft)), runid[is_ft], sum); trip_size[is_ft] = sz[as.character(runid[is_ft])] }
   is_last_ft = is_ft & (c(runid[-1], -1L) != runid)
-
-  out = rep(NA_character_, n)
-  last_miss_single_ft = FALSE
+  out = rep(NA_character_, n); last_miss_single_ft = FALSE
   for (i in seq_len(n)) {
     p = pt[i]
-    if (p %in% c("2FGM", "3FGM")) { out[i] = tm[i] }                 # made FG -> shooter
-    else if (p == "TO")          { out[i] = tm[i] }                  # turnover (incl. offensive foul)
-    else if (is_last_ft[i] && trip_size[i] >= 2 && p == "FTM") { out[i] = tm[i] }  # last made FT of a >=2 trip
-    else if (p == "D") {                                             # defensive rebound
-      if (!last_miss_single_ft) out[i] = opp(tm[i])                  # ends the SHOOTER's possession
-    }                                                                # (a D on a lone and-1 FT does not)
+    if (p %in% c("2FGM", "3FGM")) out[i] = tm[i]                       # made FG -> shooter
+    else if (p == "TO")          out[i] = tm[i]                        # turnover
+    else if (is_last_ft[i] && trip_size[i] >= 2 && p == "FTM") out[i] = tm[i]  # last made FT of >=2 trip
+    else if (p == "D") { if (!last_miss_single_ft) out[i] = opp(tm[i]) }       # opp def-rebound ends shooter poss
     if (p %in% c("2FGA", "3FGA")) last_miss_single_ft = FALSE
     else if (p == "FTA")          last_miss_single_ft = (trip_size[i] <= 1L)
     else if (p %in% c("2FGM", "3FGM", "FTM", "TO", "D", "O")) last_miss_single_ft = FALSE
@@ -101,9 +97,8 @@ build_stints_game = function(g, home, away) {
   g$pts = c(`2FGM` = 2, `3FGM` = 3, FTM = 1)[g$PLAYTYPE]; g$pts[is.na(g$pts)] = 0
   g$pe  = .poss_end(g, home, away)
 
-  # period-end charge: if a quarter runs out with the ball live (a missed shot or
-  # offensive rebound after the last terminal), charge that open possession to the
-  # offensive team (config.R rule). g is already in event order.
+  # period-end charge: ball live at the buzzer (missed shot / oreb after the last
+  # terminal) -> one possession to the offensive team (config.R rule).
   for (q in unique(g$QUARTER)) {
     idx = which(g$QUARTER == q)
     lt  = which(!is.na(g$pe[idx])); lt = if (length(lt)) max(lt) else 0L
@@ -142,8 +137,8 @@ build_stints_game = function(g, home, away) {
         H1 = h5[1], H2 = h5[2], H3 = h5[3], H4 = h5[4], H5 = h5[5],
         A1 = a5[1], A2 = a5[2], A3 = a5[3], A4 = a5[4], A5 = a5[5],
         SEC = max(0, round(starts[s] - ends[s])),
-        POSS_HOME = sum(es$pe == home, na.rm = TRUE), POSS_AWAY = sum(es$pe == away, na.rm = TRUE),
-        PTS_HOME  = sum(es$pts[es$CODETEAM == home]), PTS_AWAY = sum(es$pts[es$CODETEAM == away]),
+        POSS = sum(es$pe == home, na.rm = TRUE), OPP_POSS = sum(es$pe == away, na.rm = TRUE),
+        PTS  = sum(es$pts[es$CODETEAM == home]), OPP_PTS  = sum(es$pts[es$CODETEAM == away]),
         OK = (length(H[[s]]) == 5 && length(A[[s]]) == 5),
         stringsAsFactors = FALSE)
     }
@@ -183,25 +178,20 @@ build_stints_season = function(scode, el = NULL) {
   invisible(st)
 }
 
-# ---- INCREMENTAL: add only the games not already in analysis/stints_<scode>.rds
+# ---- INCREMENTAL: add only the games not already in stints/stints_<scode>.rds -
 build_stints_incremental = function(scode = NULL, el = NULL) {
   if (is.null(scode)) scode = if (!is.na(TEST_SCODE)) TEST_SCODE else tail(SEASONS$scode, 1)
   if (is.null(el)) el = readRDS(season_rds_path(scode))
   if (is.null(el$pbp) || !nrow(el$pbp)) { message(scode, ": no pbp - skipped"); return(invisible(NULL)) }
-
   existing = if (file.exists(stints_path(scode))) readRDS(stints_path(scode)) else NULL
   done = if (!is.null(existing)) unique(as.character(existing$GAME_ID)) else character(0)
-  all_g = unique(as.character(el$pbp$GAME_ID))
-  new_g = setdiff(all_g, done)
+  all_g = unique(as.character(el$pbp$GAME_ID)); new_g = setdiff(all_g, done)
   message(sprintf("%s INCREMENTAL: %d games total, %d already stinted, %d new",
                   scode, length(all_g), length(done), length(new_g)))
-
   if (length(new_g)) {
     new_st = .stints_for_games(el$pbp, el$fixtures, new_g)
-    st = bind_rows(.drop_games(existing, new_g), new_st)   # idempotent re-add
-  } else {
-    st = existing
-  }
+    st = bind_rows(.drop_games(existing, new_g), new_st)
+  } else st = existing
   if (is.null(st) || !nrow(st)) { message("  nothing to write"); return(invisible(st)) }
   saveRDS(st, stints_path(scode), compress = "xz")
   message(sprintf("  -> %d stints (%.1f%% 5v5-clean) -> %s", nrow(st), 100 * mean(st$OK), stints_path(scode)))
@@ -221,8 +211,8 @@ build_stints = function(scodes = NULL) {
 if (sys.nframe() == 0) {
   args = commandArgs(trailingOnly = TRUE)
   if (length(args) && tolower(args[1]) %in% c("incremental", "inc", "update")) {
-    build_stints_incremental(if (length(args) >= 2) args[2] else NULL)   # current season (or given)
+    build_stints_incremental(if (length(args) >= 2) args[2] else NULL)
   } else {
-    build_stints(if (length(args)) args else NULL)                        # full
+    build_stints(if (length(args)) args else NULL)
   }
 }
