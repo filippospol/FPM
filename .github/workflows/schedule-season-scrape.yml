@@ -1,4 +1,4 @@
-name: Euroleague: Data Collection & Stint Builder
+name: FPM Data Builder
 
 # Daily pipeline for the current EuroLeague season:
 #   scrape new games -> data/el_<season>.rds
