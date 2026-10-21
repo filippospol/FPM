@@ -18,6 +18,7 @@ the floor.
 - **Descriptive and predictive versions.**
 - **Luck adjustment.**
 - **Age curve.**
+- **Recency decay**.
 
 ## Reading the number
 
