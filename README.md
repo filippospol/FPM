@@ -1,6 +1,6 @@
 # Fusion Plus-Minus (FPM)
 
-**A EuroLeague player- and coach-impact metric.**
+**A EuroLeague player impact metric.**
 
 Fusion Plus-Minus (FPM) estimates how much a player — or coach — helps his team
 outscore the opponent per 100 possessions, once teammates and opposition are
