@@ -1,9 +1,11 @@
-name: Euroleague data bundle
+name: Euroleague: Data Collection & Stint Builder
 
-# Daily incremental scrape of the current EuroLeague season into data/el_<season>.rds,
+# Daily pipeline for the current EuroLeague season:
+#   scrape new games -> data/el_<season>.rds
+#   build stints     -> stints/stints_<season>.rds   (the RAPM input)
 # plus a manual "Run workflow" button that also offers a one-time FULL bootstrap.
 #
-# First time:  Actions -> this workflow -> Run workflow -> mode = full   (builds el_E2026.rds)
+# First time:  Actions -> this workflow -> Run workflow -> mode = full   (builds E2026)
 # After that:  the daily cron runs mode = incremental automatically (only new games).
 
 on:
@@ -27,10 +29,10 @@ env:
   SEASON: ${{ github.event.inputs.season || 'E2026' }}
 
 permissions:
-  contents: write            # needed to commit the refreshed data/el_<season>.rds
+  contents: write            # needed to commit the refreshed .rds files
 
 concurrency:
-  group: scrape-current-season   # never let two scrapes run / push at once
+  group: scrape-current-season   # never let two runs push at once
   cancel-in-progress: false
 
 jobs:
@@ -64,14 +66,22 @@ jobs:
       - name: Scrape (${{ env.MODE }}) ${{ env.SEASON }} -> data/el_${{ env.SEASON }}.rds
         run: Rscript scrapers/run_scrape_all.R "$MODE" "$SEASON"
 
-      - name: Commit the updated season bundle (only data/el_<season>.rds)
+      - name: Build stints -> stints/stints_${{ env.SEASON }}.rds
+        run: |
+          if [ "$MODE" = "full" ]; then
+            Rscript analysis/build_stints.R "$SEASON"
+          else
+            Rscript analysis/build_stints.R incremental "$SEASON"
+          fi
+
+      - name: Commit refreshed data + stints
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "data/el_${SEASON}.rds"
+          git add "data/el_${SEASON}.rds" "stints/stints_${SEASON}.rds"
           if git diff --cached --quiet; then
-            echo "No change in data/el_${SEASON}.rds - nothing to commit."
+            echo "No changes - nothing to commit."
           else
-            git commit -m "data: ${MODE} scrape ${SEASON} $(date -u +'%Y-%m-%d %H:%MZ')"
+            git commit -m "data: ${MODE} ${SEASON} $(date -u +'%Y-%m-%d %H:%MZ')"
             git push
           fi
