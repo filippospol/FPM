@@ -13,8 +13,12 @@
 #   out: stints/stints_<scode>.rds    one row per stint (home = team, away = opp):
 #        GAME_ID, FIXTURE_ID, SEASON_CODE, QUARTER, STINT, HOME_CODE, AWAY_CODE,
 #        H1..H5 (team 5), A1..A5 (opponent 5), SEC,
-#        POSS, OPP_POSS,  PTS, OPP_PTS,  OK
-#        (OK = TRUE when both lineups had exactly 5 players - filter on it for RAPM.)
+#        POSS, OPP_POSS,  PTS, OPP_PTS,
+#        full counting box per lineup (no prefix = team, OPP_ = opponent):
+#          FG2M FG2A FG3M FG3A FTM FTA OREB DREB AST STL TOV BLK PF  (+ OPP_* twins)
+#        OK (TRUE when both lineups had exactly 5 players - filter on it for RAPM).
+#        Lean RAPM needs only POSS/OPP_POSS/PTS/OPP_PTS; the box columns feed luck
+#        adjustment and lineup analysis. PTS == 2*FG2M + 3*FG3M + FTM by construction.
 #
 # Runs UNCHANGED locally and in CI (needs only config.R + the bundles):
 #   Rscript analysis/build_stints.R                 # FULL: every el_*.rds in data/
@@ -131,6 +135,16 @@ build_stints_game = function(g, home, away) {
     for (s in seq_len(sid)) {
       es = qe[!is.na(qe$stint) & qe$stint == s, ]
       h5 = head(c(H[[s]], rep(NA, 5)), 5); a5 = head(c(A[[s]], rep(NA, 5)), 5)
+      # full counting-stat box per lineup: no prefix = team (home), OPP_ = opponent (away)
+      box = function(team) {
+        e = es[es$CODETEAM == team, ]; pt = e$PLAYTYPE; n = function(code) sum(pt == code)
+        c(FG2M = n("2FGM"), FG2A = n("2FGM") + n("2FGA"),
+          FG3M = n("3FGM"), FG3A = n("3FGM") + n("3FGA"),
+          FTM  = n("FTM"),  FTA  = n("FTM")  + n("FTA"),
+          OREB = n("O"), DREB = n("D"), AST = n("AS"), STL = n("ST"),
+          TOV  = n("TO"), BLK = n("FV"), PF = n("CM"))
+      }
+      bh = box(home); ba = box(away)
       stints[[length(stints) + 1]] = data.frame(
         GAME_ID = g$GAME_ID[1], FIXTURE_ID = g$FIXTURE_ID[1], SEASON_CODE = g$SEASON[1],
         QUARTER = q, STINT = s, HOME_CODE = home, AWAY_CODE = away,
@@ -139,6 +153,7 @@ build_stints_game = function(g, home, away) {
         SEC = max(0, round(starts[s] - ends[s])),
         POSS = sum(es$pe == home, na.rm = TRUE), OPP_POSS = sum(es$pe == away, na.rm = TRUE),
         PTS  = sum(es$pts[es$CODETEAM == home]), OPP_PTS  = sum(es$pts[es$CODETEAM == away]),
+        as.list(bh), setNames(as.list(ba), paste0("OPP_", names(ba))),
         OK = (length(H[[s]]) == 5 && length(A[[s]]) == 5),
         stringsAsFactors = FALSE)
     }
