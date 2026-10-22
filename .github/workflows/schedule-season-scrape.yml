@@ -27,6 +27,8 @@ on:
 env:
   MODE: ${{ github.event.inputs.mode || 'incremental' }}
   SEASON: ${{ github.event.inputs.season || 'E2026' }}
+  # Install packages into a dedicated, cached library (see the cache step below).
+  R_LIBS_USER: ${{ github.workspace }}/.rlib
 
 permissions:
   contents: write            # needed to commit the refreshed .rds files
@@ -46,22 +48,28 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
-          use-public-rspm: true     # fast binary packages
+          use-public-rspm: true     # Posit binary packages (no source compiles)
 
-      - name: Install R package dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+      # Cache the installed package library across runs. The key is static, so
+      # after the FIRST run the library is restored in seconds and the install
+      # step below is a no-op. Bump -v2 to v3 if you change the package list or R.
+      - name: Cache R packages
+        uses: actions/cache@v4
         with:
-          packages: |
-            any::dplyr
-            any::purrr
-            any::tidyr
-            any::stringr
-            any::stringi
-            any::httr
-            any::jsonlite
-            any::glue
-            any::janitor
-            any::zip
+          path: ${{ env.R_LIBS_USER }}
+          key: r-pkgs-${{ runner.os }}-v2
+          restore-keys: r-pkgs-${{ runner.os }}-
+
+      - name: Install missing R packages
+        shell: Rscript {0}
+        run: |
+          lib <- Sys.getenv("R_LIBS_USER")
+          dir.create(lib, showWarnings = FALSE, recursive = TRUE)
+          .libPaths(lib)
+          pkgs <- c("dplyr","purrr","tidyr","stringr","stringi",
+                    "httr","jsonlite","glue","janitor","zip")
+          miss <- setdiff(pkgs, rownames(installed.packages()))
+          if (length(miss)) install.packages(miss) else message("all packages cached - skipping install")
 
       - name: Scrape (${{ env.MODE }}) ${{ env.SEASON }} -> data/el_${{ env.SEASON }}.rds
         run: Rscript scrapers/run_scrape_all.R "$MODE" "$SEASON"
