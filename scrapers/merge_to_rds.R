@@ -82,7 +82,10 @@ load_seasons = function(scodes) {
   els = els[!vapply(els, is.null, logical(1))]
   if (!length(els)) return(NULL)
   tabs = unique(unlist(lapply(els, names)))
-  setNames(lapply(tabs, function(t) bind_rows(lapply(els, function(e) e[[t]]))), tabs)
+  # pooling bundles of different vintages can mix GAME_ID int/char - coerce to character before binding
+  setNames(lapply(tabs, function(t) bind_rows(lapply(els, function(e){
+    d = e[[t]]; if (!is.null(d) && "GAME_ID" %in% names(d)) d$GAME_ID = as.character(d$GAME_ID); d
+  }))), tabs)
 }
 
 if (sys.nframe() == 0) {
