@@ -40,6 +40,14 @@ drop_fixtures = function(df, fids) {
 append_rows = function(old, new) {
   if (is.null(new) || !nrow(new)) return(old)
   if (is.null(old) || !nrow(old)) return(new)
+  # The stored bundle reads IDs via read.csv (GAME_ID -> integer), while a freshly
+  # scraped game keeps them as character, so bind_rows aborts on the type clash.
+  # Reconcile any shared column whose class differs by coercing both to character.
+  for (c in intersect(names(old), names(new))) {
+    if (!identical(class(old[[c]]), class(new[[c]]))) {
+      old[[c]] = as.character(old[[c]]); new[[c]] = as.character(new[[c]])
+    }
+  }
   bind_rows(old, new)
 }
 
