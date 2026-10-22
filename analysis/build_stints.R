@@ -185,6 +185,7 @@ build_stints_game = function(g, home, away) {
 build_stints_season = function(scode, el = NULL) {
   if (is.null(el)) el = readRDS(season_rds_path(scode))
   if (is.null(el$pbp) || !nrow(el$pbp)) { message(scode, ": no pbp - skipped"); return(invisible(NULL)) }
+  el$pbp$GAME_ID = as.character(el$pbp$GAME_ID)   # GAME_ID is an id - keep it a stable character key
   gids = unique(el$pbp$GAME_ID)
   st = .stints_for_games(el$pbp, el$fixtures, gids)
   saveRDS(st, stints_path(scode), compress = "xz")
@@ -198,7 +199,9 @@ build_stints_incremental = function(scode = NULL, el = NULL) {
   if (is.null(scode)) scode = if (!is.na(TEST_SCODE)) TEST_SCODE else tail(SEASONS$scode, 1)
   if (is.null(el)) el = readRDS(season_rds_path(scode))
   if (is.null(el$pbp) || !nrow(el$pbp)) { message(scode, ": no pbp - skipped"); return(invisible(NULL)) }
+  el$pbp$GAME_ID = as.character(el$pbp$GAME_ID)   # new stint rows get a character GAME_ID...
   existing = if (file.exists(stints_path(scode))) readRDS(stints_path(scode)) else NULL
+  if (!is.null(existing)) existing$GAME_ID = as.character(existing$GAME_ID)  # ...and so do the stored ones, so the bind never clashes on type
   done = if (!is.null(existing)) unique(as.character(existing$GAME_ID)) else character(0)
   all_g = unique(as.character(el$pbp$GAME_ID)); new_g = setdiff(all_g, done)
   message(sprintf("%s INCREMENTAL: %d games total, %d already stinted, %d new",
