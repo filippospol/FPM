@@ -90,6 +90,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes - nothing to commit."
           else
-            git commit -m "data: ${MODE} ${SEASON} $(date -u +'%Y-%m-%d %H:%MZ')"
+            git commit -m "data: ${MODE} ${SEASON} $(date -u)"
             git push
           fi
