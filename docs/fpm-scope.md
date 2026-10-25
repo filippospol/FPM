@@ -11,8 +11,10 @@ leaving room to keep improving the model.
 
 ## Source and use
 
-FPM is built from publicly available EuroLeague data. You are welcome to use what is shared here; a
-mention or a link back is appreciated, and the LICENSE file holds the formal terms.
+FPM is built from publicly available EuroLeague data, and that data is open here for anyone to use. If
+you want to build your own impact model, test an idea, or just dig through the numbers, it is there for
+exactly that, and whatever you make with it is your own. A mention or a link back is appreciated, and the
+LICENSE file holds the formal terms.
 
 ## Updates
 
