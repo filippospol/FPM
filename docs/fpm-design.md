@@ -22,8 +22,8 @@ PIPM, BPM, DARKO and RAPTOR all do the same two things under the branding: start
 (a model of what a player's production should be worth), then let the regularized on/off pull that prior
 around. The box score is steady but blind; the scoreboard sees everything but lies; put one on top of
 the other and you get something that's both. That is the skeleton of FPM: a prior-informed RAPM, offense
-and defense split out, with single-season on/off pulled back toward the prior so one hot month can't run
-away with the leaderboard.
+and defense split out, fit on expected points rather than raw scoreboard points, with single-season
+on/off pulled back toward the prior so one hot month can't run away with the leaderboard.
 
 The rest is a matter of doing it for the EuroLeague instead of importing NBA numbers, which matters more
 than it sounds. The WINSCORE authors showed that box-score weights fit on the NBA don't transfer to
@@ -35,11 +35,18 @@ harder to pin down here. So the prior is era-neutral, position-aware, and padded
 for thin samples. Era-neutral means every player is judged against his own season, since the three-point
 line moved out and the format of the competition changed more than once over the years.
 
-The luck handling is worth a closer look. Instead of scoring possessions on points, FPM scores them on
-expected points from the shot detail: grade the shot, not whether it dropped. LUMA on court-share was
-the reference point for a possession-level, shot-aware model. On top of that sit a couple of ideas from
-the dynamic-talent world: Engelmann's aging-to-peak and opponent-luck notes, and Medvedovsky and
-Patton's DARKO, which treats talent as a moving thing you keep updating rather than a season you average.
+The luck handling is the part that sets FPM apart from a textbook RAPM, and it is worth dwelling on. A
+standard RAPM regresses the actual point margin of each possession, so made shots help and missed shots
+hurt, and a hot or cold shooting run feeds straight into the ratings. FPM changes the target. Instead of
+actual points, the regression is fit on expected points from the shot detail: every shot is valued by
+what a shot of that type and from that spot is worth on average, not by whether it happened to fall.
+Grade the shot, not the make. The result is an expected-points RAPM, with ratings in
+expected-points-per-100, where shooting variance, the single biggest source of single-season noise,
+never enters the signal in the first place. Fitting plus-minus on an alternative response like this goes
+back to Macdonald's ridge APM and the expected-goals plus-minus common in hockey, with LUMA on
+court-share as the reference point for a possession-level, shot-aware version. On top of that sit a
+couple of ideas from the dynamic-talent world: Engelmann's aging-to-peak and opponent-luck notes, and
+Medvedovsky and Patton's DARKO, which treats talent as a moving thing you keep updating rather than a season you average.
 That's where the aging curve and the recency decay come from. A player's rating leans mostly on his own
 recent form, with older seasons fading out and the current season loosened so it tracks how he's playing
 now.
