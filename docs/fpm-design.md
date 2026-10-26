@@ -155,9 +155,14 @@ accuracy for stability: it cuts the noise, but a season that genuinely breaks fr
 leap, a role change) gets pulled back more than it should. The strength of that pull was set for average
 accuracy, which won't be right for every individual case.
 
-**Impact is contextual, not a pure skill rating.** FPM measures what happened with a player on the
-floor, inside his team and role. Scheme, usage and teammate fit all leak into the number. A player's FPM
-can move when his situation changes even if he hasn't.
+**Impact is tied to team context and style, not pure skill.** FPM measures what happened with a player
+on the floor, inside his team, role and system. Scheme, usage, pace and the quality of his teammates all
+feed into the number, and no RAPM can fully separate them from the player. One visible effect is that
+players in strong, stable setups tend to sit high season after season: a rim finisher like Tavares is
+set up by the passers around him, and a shooter like Vezenkov gains from the spacing and shot creation
+his team generates. That does not make the ratings wrong, both are genuinely excellent, but some of the
+figure belongs to the situation as much as the player, and a move to a new team or role can shift an FPM
+even when the player has not changed.
 
 **Early-season and low-minute ratings lean on the past.** Until a player logs enough possessions, his
 rating is mostly his age-adjusted baseline. That's the right call statistically, but it means the live
