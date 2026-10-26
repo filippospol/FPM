@@ -7,7 +7,7 @@ plain-language companion to the technical documentation.
 
 Every impact metric is really after the same thing: when a guy is on the floor, does his team win the
 possession battle, and how much of that is actually him rather than the four teammates standing next to
-him? FPM answers that with one number, in **expected** points per 100 possessions above an average player. Zero is
+him? FPM answers that with one number, in points per 100 possessions above an average player. Zero is
 average. A good starter lands somewhere around +1 to +3. Stars are +4 and up.
 
 ## Why the obvious approaches fall short
@@ -76,6 +76,17 @@ ugly miss) barely registers in the numbers, FPM included. It does well with rim 
 up good guard defenders when the scoreboard backs them up, but every so often it'll shortchange an
 elite on-ball guy. That's a limit of what the stats can see, and it's better to say so than pretend
 otherwise.
+
+## It can't fully separate a player from his team
+
+This one is worth being plain about. FPM, like every RAPM metric, measures a player's impact inside his
+team and its style of play, not in a vacuum. It pulls a player apart from the specific teammates he
+shares the floor with, but it can't remove the simple fact that a good system and good teammates make a
+player look better, and a weak setup makes him look worse. That's part of why names like Vezenkov and
+Tavares turn up near the top across several seasons. They're genuinely excellent, but they also play in
+strong, stable setups that feed their strengths, a shooter getting clean looks, a big getting fed at the
+rim, and some of that team context lands in their number. A high FPM is best read as impact in a
+situation, not a context-free skill score.
 
 ## Bottom line
 
