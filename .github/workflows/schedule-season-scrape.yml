@@ -94,11 +94,11 @@ jobs:
             git push
           fi
 
-      - name: Trigger the FPM engine
+            - name: Trigger the FPM engine
         if: success()
         run: |
           curl -sS -X POST \
             -H "Authorization: Bearer ${{ secrets.ENGINE_DISPATCH_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/filippospol/PRIVATE-REPO/dispatches \
-            -d "{\"event_type\":\"public-data-updated\",\"client_payload\":{\"season\":\"${SEASON}\"}}"
+            https://api.github.com/repos/filippospol/FPM-model/dispatches \
+            -d "{\"event_type\":\"public-data-updated\",\"client_payload\":{\"season\":\"${SEASON}\"}}""${SEASON}\"}}"
