@@ -47,6 +47,7 @@ a{color:var(--accent)}
 select,input{font:500 13px/1 'Roboto Mono',monospace;color:var(--text);background:var(--panel);
   border:1px solid var(--line-2);border-radius:3px;padding:11px 12px}
 select{text-transform:uppercase;letter-spacing:.06em}
+#team{text-transform:none;letter-spacing:.01em;max-width:230px}
 input{flex:1;min-width:190px}
 input::placeholder{color:var(--muted)}
 select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
@@ -71,13 +72,16 @@ tbody td{font-size:13px;text-align:right;padding:13px 10px;vertical-align:middle
 tbody td.l{text-align:left}
 tbody tr:nth-child(even) td{background:var(--stripe)}
 tbody tr:hover td{background:var(--hover)}
+.rankh{width:42px;cursor:default}
+.rankh:hover{color:var(--muted)}
+.rank{color:var(--muted);font-variant-numeric:tabular-nums}
 .player{font-weight:600;color:var(--text)}
 .team,.pos,.role{color:var(--muted);font-size:12px;letter-spacing:.02em}
 .fpm{text-align:center;font-weight:700;color:var(--text);width:74px}
 .fpm .v{font-size:14px;display:block}
 .fpm .pc{display:block;font-size:9.5px;font-weight:500;color:var(--faint);margin-top:2px;letter-spacing:.04em}
-.up{color:rgb(30,136,229)}   /* positive = blue, matches the heatmap */
-.dn{color:rgb(216,27,96)}    /* negative = red */
+td .up{color:rgb(30,136,229)!important}   /* positive = blue (above-average swatch) */
+td .dn{color:rgb(216,27,96)!important}    /* negative = magenta (below-average swatch) */
 .se-col{display:none}
 table.show-se .se-col{display:table-cell}
 .empty{display:none;padding:44px 4px;color:var(--muted);font-size:13px}
@@ -136,6 +140,7 @@ footer a:hover{color:var(--text);border-bottom-color:var(--text)}
 
   <div class="controls">
     <select id="season" aria-label="Season"></select>
+    <select id="team" aria-label="Team"></select>
     <input id="q" type="search" placeholder="Search player or team">
     <span class="legend">
       <span class="key"><span class="chip" style="background:rgba(216,27,96,.78)"></span>below average</span>
@@ -148,6 +153,7 @@ footer a:hover{color:var(--text);border-bottom-color:var(--text)}
   <div class="scroll">
     <table id="tbl">
       <thead><tr>
+        <th class="l rankh">#</th>
         <th class="l" data-k="0">Player</th>
         <th class="l" data-k="1">Team</th>
         <th class="l c-pos" data-k="2">Pos</th>
@@ -219,7 +225,7 @@ footer a:hover{color:var(--text);border-bottom-color:var(--text)}
 <script>
 var DATA={},TEAMS={},META={},CUR="";
 var $=function(s){return document.getElementById(s)};
-var state={season:"",q:"",k:"7",dir:-1};
+var state={season:"",team:"",q:"",k:"7",dir:-1};
 var NUM={3:1,4:1,5:1,6:1,7:1,8:1,9:1,10:1,11:1};
 
 function sgn(v){v=+v;return (v>=0?'+':'')+v.toFixed(1);}
@@ -231,6 +237,7 @@ function od(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+s
 
 function rows(){
   var r=(DATA[state.season]||[]).map(function(a,i){return{a:a,i:i}});
+  if(state.team)r=r.filter(function(x){return x.a[1]===state.team;});
   if(state.q){var q=state.q.toLowerCase();r=r.filter(function(x){
     var tn=(TEAMS[x.a[1]]||'').toLowerCase();
     return x.a[0].toLowerCase().indexOf(q)>-1||x.a[1].toLowerCase().indexOf(q)>-1||tn.indexOf(q)>-1;});}
@@ -239,10 +246,19 @@ function rows(){
     if(xa<ya)return -state.dir;if(xa>ya)return state.dir;return x.i-y.i;});
   return r;
 }
+/* rank each player within the full season by a metric column (best = 1) */
+function rankBy(k){
+  var all=(DATA[state.season]||[]).map(function(a,i){return{a:a,i:i}});
+  all.sort(function(x,y){return y.a[k]-x.a[k];});
+  var m={};for(var j=0;j<all.length;j++)m[all[j].i]=j+1;return m;
+}
 function render(){
   var r=rows(),h='';
-  for(var i=0;i<r.length;i++){var a=r[i].a;
+  var showRank=(state.k==="7"||state.k==="8"||state.k==="9");   /* FPM, O-FPM, D-FPM */
+  var rk=showRank?rankBy(+state.k):null;
+  for(var i=0;i<r.length;i++){var row=r[i],a=row.a;
     h+='<tr>'+
+      '<td class="l rank">'+(showRank?rk[row.i]:'')+'</td>'+
       '<td class="l player">'+a[0]+'</td>'+
       '<td class="l team" title="'+(TEAMS[a[1]]||a[1])+'">'+a[1]+'</td>'+
       '<td class="l pos c-pos">'+a[2]+'</td>'+
@@ -269,16 +285,28 @@ function render(){
       ar.innerHTML=state.dir===-1?'&#9660;':'&#9650;';}
     else{el.classList.remove('on');if(ar)ar.remove();}}
 }
+/* team dropdown for the chosen season: full names, "All teams" default */
+function fillTeams(){
+  var sel=$('team'),prev=state.team,codes={};
+  (DATA[state.season]||[]).forEach(function(a){codes[a[1]]=1;});
+  var list=Object.keys(codes).sort(function(x,y){return (TEAMS[x]||x).localeCompare(TEAMS[y]||y);});
+  sel.innerHTML='<option value="">All teams</option>';
+  list.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=TEAMS[c]||c;sel.appendChild(o);});
+  if(prev&&codes[prev])sel.value=prev;else{sel.value='';state.team='';}
+}
 function boot(){
   var sel=$('season');var ss=META.seasons||[];sel.innerHTML='';
   for(var i=ss.length-1;i>=0;i--){var o=document.createElement('option');o.value=ss[i].code;o.textContent=ss[i].label;sel.appendChild(o);}
   CUR=META.current||(ss.length?ss[ss.length-1].code:"");sel.value=CUR;state.season=CUR;
+  fillTeams();
   render();
 }
-$('season').addEventListener('change',function(){state.season=this.value;render();});
+$('season').addEventListener('change',function(){state.season=this.value;fillTeams();render();});
+$('team').addEventListener('change',function(){state.team=this.value;render();});
 $('q').addEventListener('input',function(){state.q=this.value;render();});
 document.querySelectorAll('thead th').forEach(function(el){el.addEventListener('click',function(){
   var k=el.getAttribute('data-k');
+  if(!k)return;   /* the # column is not sortable */
   if(state.k===k)state.dir*=-1;else{state.k=k;state.dir=(k==="0"||k==="1"||k==="2"||k==="12")?1:-1;}
   render();});});
 
