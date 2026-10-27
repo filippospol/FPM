@@ -84,21 +84,20 @@ jobs:
 
       - name: Commit refreshed data + stints
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "data/el_${SEASON}.rds" "stints/stints_${SEASON}.rds"
           if git diff --cached --quiet; then
             echo "No changes - nothing to commit."
           else
-            git commit -m "data: ${MODE} ${SEASON} $(date -u)"
+            git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' \
+                commit -m "data: ${MODE} ${SEASON} $(date -u +%F)"
             git push
           fi
 
-            - name: Trigger the FPM engine
+      - name: Trigger the FPM engine
         if: success()
         run: |
           curl -sS -X POST \
             -H "Authorization: Bearer ${{ secrets.ENGINE_DISPATCH_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/filippospol/FPM-model/dispatches \
-            -d "{\"event_type\":\"public-data-updated\",\"client_payload\":{\"season\":\"${SEASON}\"}}""${SEASON}\"}}"
+            -d "{\"event_type\":\"public-data-updated\",\"client_payload\":{\"season\":\"${SEASON}\"}}"
