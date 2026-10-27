@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FPM Leaderboard</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap">
+<style>
+/* Matches the R-bball-projects house style: Roboto Mono, dark greys, hairline rules,
+   black-grey-white only. Swiss structure (thick rules, open rows), monospace data terminal. */
+:root{
+  --bg:#1a1a1a; --panel:#1e1e1e; --stripe:#232323; --hover:#262626;
+  --text:#ffffff; --sec:#cccccc; --muted:#8e8e8e; --faint:#777777;
+  --line:#555555; --line-2:#333333; --accent:#d4d7dd;
+  --gut:max(18px,env(safe-area-inset-left,0px));
+  --gutr:max(18px,env(safe-area-inset-right,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);
+  font-family:'Roboto Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 var(--gutr) 72px var(--gut)}
+
+/* masthead */
+.mast{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:42px 0 0}
+.brand .row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.brand h1{font-weight:700;font-size:clamp(42px,8vw,66px);line-height:.9;letter-spacing:-.01em;margin:0}
+.brand .exp{font-size:11px;text-transform:uppercase;letter-spacing:.24em;color:var(--muted);padding-bottom:7px}
+.mark{height:3px;width:58px;background:var(--accent);margin:15px 0 0}
+.aboutbtn{flex:0 0 auto;font:600 12px/1 'Roboto Mono',monospace;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--sec);background:transparent;border:1px solid var(--line);border-radius:3px;
+  padding:10px 15px;cursor:pointer;margin-top:6px}
+.aboutbtn:hover{color:var(--text);border-color:var(--text)}
+.about-p{max-width:60ch;margin:20px 0 0;font-size:13.5px;line-height:1.65;color:var(--sec)}
+.about-p b{color:var(--text);font-weight:600}
+.homecredit{margin:12px 0 0;font-size:12px;color:var(--muted);letter-spacing:.02em}
+.homecredit a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--line-2)}
+.homecredit a:hover{color:var(--text);border-bottom-color:var(--text)}
+.rule{height:2px;background:var(--line);margin:22px 0 0}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0 0}
+select,input{font:500 13px/1 'Roboto Mono',monospace;color:var(--text);background:var(--panel);
+  border:1px solid var(--line-2);border-radius:3px;padding:11px 12px}
+select{text-transform:uppercase;letter-spacing:.06em}
+input{flex:1;min-width:190px}
+input::placeholder{color:var(--muted)}
+select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.legend{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);letter-spacing:.02em;flex-wrap:wrap}
+.key{display:inline-flex;align-items:center;gap:6px}
+.chip{display:inline-block;width:14px;height:14px;border-radius:2px;border:1px solid var(--line-2);vertical-align:-3px}
+.count{margin-left:auto;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+/* table */
+.scroll{margin-top:6px}
+table{width:100%;border-collapse:collapse}
+thead th{position:sticky;top:0;z-index:20;background:var(--bg);
+  font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);
+  text-align:right;padding:16px 10px 11px;border-bottom:2px solid var(--line);
+  cursor:pointer;white-space:nowrap;user-select:none}
+thead th.l{text-align:left}
+thead th:hover{color:var(--sec)}
+thead th.on{color:var(--text)}
+.ar{color:var(--accent);font-size:9px;margin-left:3px}
+tbody td{font-size:13px;text-align:right;padding:13px 10px;vertical-align:middle;
+  border-bottom:1px solid var(--line-2);white-space:nowrap;color:var(--sec)}
+tbody td.l{text-align:left}
+tbody tr:nth-child(even) td{background:var(--stripe)}
+tbody tr:hover td{background:var(--hover)}
+.player{font-weight:600;color:var(--text)}
+.team,.pos,.role{color:var(--muted);font-size:12px;letter-spacing:.02em}
+.fpm{text-align:center;font-weight:700;color:var(--text);width:74px}
+.fpm .v{font-size:14px;display:block}
+.fpm .pc{display:block;font-size:9.5px;font-weight:500;color:var(--faint);margin-top:2px;letter-spacing:.04em}
+.up{color:var(--text)}
+.dn{color:var(--faint)}
+.se-col{display:none}
+table.show-se .se-col{display:table-cell}
+.empty{display:none;padding:44px 4px;color:var(--muted);font-size:13px}
+footer{margin-top:26px;font-size:11px;line-height:1.75;color:var(--muted);letter-spacing:.01em}
+footer a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--line-2)}
+footer a:hover{color:var(--text);border-bottom-color:var(--text)}
+.by{margin-top:8px}
+
+/* about overlay */
+.overlay{position:fixed;inset:0;z-index:100;display:none;background:rgba(0,0,0,.66);
+  padding:max(20px,env(safe-area-inset-top,0px)) 16px 28px;overflow:auto}
+.overlay.open{display:block}
+.modal{max-width:620px;margin:4vh auto;background:var(--panel);border:1px solid var(--line-2);border-radius:5px;
+  padding:26px 28px 24px}
+.modal .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  border-bottom:2px solid var(--line);padding-bottom:14px;margin-bottom:4px}
+.modal h2{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.modal .close{font:600 20px/1 'Roboto Mono',monospace;color:var(--muted);background:transparent;border:0;cursor:pointer;padding:4px}
+.modal .close:hover{color:var(--text)}
+.modal section{padding:16px 0;border-bottom:1px solid var(--line-2)}
+.modal section:last-of-type{border-bottom:0}
+.modal h3{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+.modal p{margin:0;font-size:13px;line-height:1.65;color:var(--sec)}
+.modal p b{color:var(--text);font-weight:600}
+.modal .credit{margin-top:18px;font-size:12px;color:var(--muted)}
+.modal .credit a{color:var(--text);text-decoration:none;border-bottom:1px solid var(--line)}
+.modal .credit a:hover{border-bottom-color:var(--text)}
+
+@media(max-width:1000px){.c-min,.c-poss{display:none}}
+@media(max-width:820px){.c-age,.c-gp{display:none}}
+@media(max-width:620px){
+  .c-role,.c-o,.c-d{display:none}
+  table.show-se .se-col{display:none}
+  .mast{flex-wrap:wrap}
+}
+@media(max-width:430px){.c-pos{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="brand">
+      <div class="row"><h1>FPM</h1><span class="exp">Fair Plus-Minus</span></div>
+      <div class="mark"></div>
+    </div>
+    <button class="aboutbtn" id="aboutBtn" aria-haspopup="dialog">About</button>
+  </header>
+
+  <p class="about-p">A EuroLeague player's on-court impact, in points per 100 possessions above an
+    average player, split into <b>offense</b> and <b>defense</b>. It reads the quality of the shots
+    a team takes and gives up rather than whether they fell. Zero is average; a typical starter is
+    +1 to +3, a star +4 and up.</p>
+  <div class="homecredit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
+  <div class="rule"></div>
+
+  <div class="controls">
+    <select id="season" aria-label="Season"></select>
+    <input id="q" type="search" placeholder="Search player or team">
+    <span class="legend">
+      <span class="key"><span class="chip" style="background:rgba(216,27,96,.78)"></span>below average</span>
+      <span class="key"><span class="chip" style="background:rgba(30,136,229,.78)"></span>above average</span>
+      &middot; number in the box is the season percentile
+    </span>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="scroll">
+    <table id="tbl">
+      <thead><tr>
+        <th class="l" data-k="0">Player</th>
+        <th class="l" data-k="1">Team</th>
+        <th class="l c-pos" data-k="2">Pos</th>
+        <th class="l c-role" data-k="12">Role</th>
+        <th class="c-age" data-k="3">Age</th>
+        <th class="c-gp" data-k="4">GP</th>
+        <th class="c-min" data-k="5">Min</th>
+        <th class="c-poss" data-k="6">Poss</th>
+        <th class="on" data-k="7">FPM<span class="ar">&#9660;</span></th>
+        <th class="se-col c-se" data-k="10">&plusmn;</th>
+        <th class="c-o" data-k="8">O-FPM</th>
+        <th class="c-d" data-k="9">D-FPM</th>
+      </tr></thead>
+      <tbody id="body"></tbody>
+    </table>
+    <div class="empty" id="empty">Loading the leaderboard&hellip;</div>
+  </div>
+
+  <footer>
+    Regular season and the old Top&nbsp;16 only &middot; 2007-08 to 2026-27 &middot; minimum 400 possessions,
+    120 in the current season &middot; standard error (&plusmn;) shown on the current season &middot; updated through the season.
+    <div class="by">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a>.</div>
+  </footer>
+</div>
+
+<div class="overlay" id="about" role="dialog" aria-modal="true" aria-labelledby="aboutH">
+  <div class="modal">
+    <div class="top"><h2 id="aboutH">About FPM</h2><button class="close" id="aboutClose" aria-label="Close">&times;</button></div>
+    <section>
+      <h3>What it is</h3>
+      <p>FPM estimates how much a player helps his team outscore the opponent per 100 possessions,
+        once teammates and opposition are accounted for. One two-way number for the EuroLeague, built
+        to measure how good a player is <b>now</b>.</p>
+    </section>
+    <section>
+      <h3>Why &ldquo;fair&rdquo;</h3>
+      <p>It blends a regularized on/off rating (RAPM) with an era-neutral, position-aware box-score
+        prior. The box score sets what to expect, the scoreboard says what actually happened, and the
+        blend stays stable and honest. Every setting is chosen by out-of-sample testing, not by hand.</p>
+    </section>
+    <section>
+      <h3>How to read it</h3>
+      <p>Points per 100 possessions versus an average rotation player, on roughly a &plusmn;7 scale.
+        <b>O-FPM</b> and <b>D-FPM</b> split it into offense and defense. The small figure in each box
+        is the player's percentile for that season, and the cell shades lighter as that rises.
+        <b>&plusmn;</b> is the standard error, shown on the current season.</p>
+    </section>
+    <section>
+      <h3>What it accounts for</h3>
+      <p>Luck is taken out by grading <b>expected points</b> from shot quality, not whether shots fell.
+        Each season is judged against its own league, so eras stay comparable. Players are sorted into
+        guard / wing / forward / big tiers with a box-score role tag, and an aging curve and recency
+        weighting keep the rating current.</p>
+    </section>
+    <section>
+      <h3>One caveat</h3>
+      <p>FPM measures impact inside a team and a system, not context-free talent. A strong setup lifts
+        a player's number, so part of a high rating belongs to the situation as much as the player.</p>
+    </section>
+    <section>
+      <h3>Coverage</h3>
+      <p>Regular season and the old Top&nbsp;16, every season from 2007-08 to today. The current season
+        updates through the year as games are played.</p>
+    </section>
+    <div class="credit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
+  </div>
+</div>
+
+<script>
+var DATA={},TEAMS={},META={},CUR="";
+var $=function(s){return document.getElementById(s)};
+var state={season:"",q:"",k:"7",dir:-1};
+var NUM={3:1,4:1,5:1,6:1,7:1,8:1,9:1,10:1,11:1};
+
+function sgn(v){v=+v;return (v>=0?'+':'')+v.toFixed(1);}
+/* colour-blind-safe diverging: blue above average, magenta below */
+function heat(v){var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t);
+  var c=t>=0?'30,136,229':'216,27,96';
+  return 'background:rgba('+c+','+(0.14+0.5*a).toFixed(3)+')';}
+function od(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+sgn(v)+'</span>';}
+
+function rows(){
+  var r=(DATA[state.season]||[]).map(function(a,i){return{a:a,i:i}});
+  if(state.q){var q=state.q.toLowerCase();r=r.filter(function(x){
+    var tn=(TEAMS[x.a[1]]||'').toLowerCase();
+    return x.a[0].toLowerCase().indexOf(q)>-1||x.a[1].toLowerCase().indexOf(q)>-1||tn.indexOf(q)>-1;});}
+  var k=+state.k,num=NUM[k];
+  r.sort(function(x,y){var xa=x.a[k],ya=y.a[k];if(num){xa=+xa;ya=+ya;}
+    if(xa<ya)return -state.dir;if(xa>ya)return state.dir;return x.i-y.i;});
+  return r;
+}
+function render(){
+  var r=rows(),h='';
+  for(var i=0;i<r.length;i++){var a=r[i].a;
+    h+='<tr>'+
+      '<td class="l player">'+a[0]+'</td>'+
+      '<td class="l team" title="'+(TEAMS[a[1]]||a[1])+'">'+a[1]+'</td>'+
+      '<td class="l pos c-pos">'+a[2]+'</td>'+
+      '<td class="l role c-role">'+(a[12]||'')+'</td>'+
+      '<td class="c-age">'+Math.round(a[3])+'</td>'+
+      '<td class="c-gp">'+a[4]+'</td>'+
+      '<td class="c-min">'+a[5]+'</td>'+
+      '<td class="c-poss">'+a[6]+'</td>'+
+      '<td class="fpm" style="'+heat(+a[7])+'"><span class="v">'+sgn(a[7])+'</span><span class="pc">'+a[11]+'</span></td>'+
+      '<td class="se-col c-se">&plusmn;'+(+a[10]).toFixed(1)+'</td>'+
+      '<td class="c-o">'+od(a[8])+'</td>'+
+      '<td class="c-d">'+od(a[9])+'</td>'+
+    '</tr>';
+  }
+  $('body').innerHTML=h;
+  $('tbl').classList.toggle('show-se',state.season===CUR);
+  $('empty').style.display=r.length?'none':'block';
+  if(!r.length)$('empty').textContent='No players match that search.';
+  $('count').textContent=r.length+' players';
+  var th=document.querySelectorAll('thead th');
+  for(var j=0;j<th.length;j++){var el=th[j],ar=el.querySelector('.ar');
+    if(el.getAttribute('data-k')===state.k){el.classList.add('on');
+      if(!ar){ar=document.createElement('span');ar.className='ar';el.appendChild(ar);}
+      ar.innerHTML=state.dir===-1?'&#9660;':'&#9650;';}
+    else{el.classList.remove('on');if(ar)ar.remove();}}
+}
+function boot(){
+  var sel=$('season');var ss=META.seasons||[];sel.innerHTML='';
+  for(var i=ss.length-1;i>=0;i--){var o=document.createElement('option');o.value=ss[i].code;o.textContent=ss[i].label;sel.appendChild(o);}
+  CUR=META.current||(ss.length?ss[ss.length-1].code:"");sel.value=CUR;state.season=CUR;
+  render();
+}
+$('season').addEventListener('change',function(){state.season=this.value;render();});
+$('q').addEventListener('input',function(){state.q=this.value;render();});
+document.querySelectorAll('thead th').forEach(function(el){el.addEventListener('click',function(){
+  var k=el.getAttribute('data-k');
+  if(state.k===k)state.dir*=-1;else{state.k=k;state.dir=(k==="0"||k==="1"||k==="2"||k==="12")?1:-1;}
+  render();});});
+
+/* about modal */
+var ov=$('about');
+function openAbout(){ov.classList.add('open');$('aboutClose').focus();}
+function closeAbout(){ov.classList.remove('open');$('aboutBtn').focus();}
+$('aboutBtn').addEventListener('click',openAbout);
+$('aboutClose').addEventListener('click',closeAbout);
+ov.addEventListener('click',function(e){if(e.target===ov)closeAbout();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&ov.classList.contains('open'))closeAbout();});
+
+/* load the two JSON files: relative first (when served beside them), repo as fallback */
+function grab(name){
+  return fetch(name).then(function(r){if(!r.ok)throw 0;return r.json();})
+    .catch(function(){return fetch('https://raw.githubusercontent.com/filippospol/FPM/main/docs/leaderboard/'+name,{cache:'no-store'}).then(function(r){return r.json();});});
+}
+Promise.all([grab('fpm.json'),grab('teams.json')]).then(function(res){
+  META=res[0]||{};DATA=META.data||{};TEAMS=res[1]||{};boot();
+}).catch(function(){var e=$('empty');e.style.display='block';e.textContent='Could not load the leaderboard data.';});
+</script>
+</body>
+</html>
