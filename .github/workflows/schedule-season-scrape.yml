@@ -10,7 +10,7 @@ name: FPM Data Builder
 
 on:
   schedule:
-    - cron: "0 5 * * *"       # 05:00 UTC daily, after the previous night's games
+    - cron: "0 2 * * *"       # 05:00 UTC daily, after the previous night's games
                               # (GitHub may delay scheduled runs by a few minutes)
   workflow_dispatch:
     inputs:
