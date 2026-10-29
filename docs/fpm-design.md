@@ -91,6 +91,10 @@ history, parallel work, and ideas that did not end up in the model.
 - **Medvedovsky, K. & Patton, A. (DARKO).** A daily-updating talent model with aging built in. https://kmedved.com/
 - **LUMA (court-share).** A possession-level, shot-aware model; the target. https://court-share.com/luma
 
+*Further reading:*
+
+- **Gelade, G. & Hvattum, L. M. (2020).** *On the relationship between +/- ratings and event-level performance statistics.* Plus-minus and box-score metrics tested head to head; each captures value the other misses, the case for blending them. https://doi.org/10.3233/JSA-200432
+
 ### Prior, stabilization, luck and aging
 
 - **Engelmann, J.** *xRAPM / RPM.* Aging-to-peak and opponent-luck ideas. https://jeremiasengelmann.substack.com/
@@ -103,6 +107,7 @@ history, parallel work, and ideas that did not end up in the model.
 
 - **Matano, F., Richardson, L. & Pospisil, T. (2018).** *Augmenting Adjusted Plus-Minus in Soccer with FIFA Ratings.* An outside rating entered as the ridge prior mean; the same prior-as-offset architecture, proven in another sport. https://arxiv.org/abs/1810.08032
 - **"Dummy RAPM" (2026).** *Representing Low-Minute Players in Regularized Adjusted Plus-Minus.* A formal treatment of the low-minute problem the padding handles. https://arxiv.org/abs/2608.19454
+- **Vaci, N., Cocić, D., Gula, B. & Bilalić, M. (2019).** *Large data and Bayesian modeling: aging curves of NBA players.* Large-sample aging curves with a peak in the mid to late twenties; a check on the quadratic peaking at 27. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6690864/
 
 ### EuroLeague and European RAPM / impact (closest prior art)
 
@@ -134,6 +139,7 @@ history, parallel work, and ideas that did not end up in the model.
 *Further reading:*
 
 - **Cervone, D., D'Amour, A., Bornn, L. & Goldsberry, K. (2014).** *POINTWISE: Predicting Points and Valuing Decisions in Real Time.* Expected possession value; grading the process rather than the outcome, in its fullest tracking form. https://arxiv.org/abs/1408.0777
+- **"Biases in Expected Goals Models Confound Finishing Ability" (2024).** Context-free expected values absorb part of real shooting skill, so good shooters can read as lucky. The main caveat for league-rate expected points. https://arxiv.org/abs/2401.09940
 - **Scott, Gee et al. (2025).** *Shot charts estimation.* Spatial shot-chart modeling. https://link.springer.com/article/10.1007/s00180-025-01599-1
 
 ### Box-score frameworks, possessions, roles
@@ -146,6 +152,7 @@ history, parallel work, and ideas that did not end up in the model.
 
 *Further reading:*
 
+- **"Expected Points Above Average" (2025).** A Bayesian hierarchical shot model that pools each shooter's skill instead of using league rates. https://arxiv.org/abs/2405.10453
 - **Bacco, L. et al. (2024).** *Causality-inspired APM.* Handles the roster/coach confound. https://proceedings.mlr.press/v236/bacco24a/bacco24a.pdf
 - **"Hypergraph Adjusted Plus-Minus" (2024).** Players and lineups in one ridge. https://arxiv.org/abs/2403.20214
 - **"Nuthin' but a G League" (2026).** A cross-league translation method. https://sponet.de/sponet/Record/4097219
