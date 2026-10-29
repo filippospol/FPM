@@ -51,8 +51,8 @@ That's where the aging curve and the recency decay come from. A player's rating 
 recent form, with older seasons fading out and the current season loosened so it tracks how he's playing
 now.
 
-The last choice is a habit more than a feature. Every parameter is tuned by out-of-sample retrodiction,
-and a piece stays in only if it helps predict what a player does next, not what makes the current
+The last choice is a habit more than a feature. The tuning parameters are set by retrodiction, so a
+piece stays in only if it helps predict what a player does next, not because it makes the current
 leaderboard look right. That rule threw out a few reasonable-sounding ideas: docking players who change
 teams, piling shot-location features into the prior, and a four-factor prior all failed the test, so none
 of them made it in.
@@ -211,6 +211,12 @@ flag.
 the scale is set from past seasons, but comparing a 2009 rating to a 2026 one still assumes that
 within-season standardization fully absorbs the changes in rules, pace and format. It mostly does, but
 there's no guarantee.
+
+**The prior learns from every completed season.** The box-score prior is trained on all finished
+seasons and applied to each of them, so the historical boards are fit partly on their own data. Only
+the season in progress is never in the prior's training set. This keeps the prior current with how the
+league actually plays, at the cost of a clean out-of-sample read on past seasons: a backtest is honest
+only for the live season, which the model has genuinely never seen.
 
 **Data quality degrades in the early seasons.** Shot detail, coach fields and some box lines are less
 clean before roughly 2015-16, so the expected-points target and a few features are weaker in those early
