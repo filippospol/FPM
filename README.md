@@ -11,7 +11,7 @@ for the EuroLeague, and tuned to measure how good a player is *now*.
 
 FPM combines a regularized on/off rating (RAPM) anchored to an era-neutral, position-aware
 box-score prior. The box score sets what to expect, the scoreboard says what actually happened, and
-the blend is both stable and honest. Every parameter is chosen by out-of-sample testing, not by hand.
+the blend is both stable and honest. The settings are chosen by how well they predict the next season, not by hand.
 
 ## Key elements
 
