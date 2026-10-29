@@ -96,6 +96,10 @@ QLEN = c(FirstQuarter = 600L, SecondQuarter = 600L, ThirdQuarter = 600L,
 build_stints_game = function(g, home, away) {
   g = g[order(suppressWarnings(as.integer(g$NUMBEROFPLAY))), ]
   g$PLAYER_ID = trimws(g$PLAYER_ID); g$CODETEAM = trimws(g$CODETEAM)
+  g$PLAYTYPE = trimws(g$PLAYTYPE)                          # legacy codes (2007-16 feeds) -> standard ones
+  g$PLAYTYPE[g$PLAYTYPE %in% c("LAYUPMD", "DUNK")]     = "2FGM"
+  g$PLAYTYPE[g$PLAYTYPE %in% c("LAYUPATT", "2FGAB")]   = "2FGA"
+  g$PLAYTYPE[g$PLAYTYPE == "3FGAB"]                   = "3FGA"
   g$qord = QORD[g$QUARTER]; g = g[!is.na(g$qord), ]
   g$clk = ave(.clock_sec(g$MARKERTIME), g$QUARTER, FUN = .ffill)
   g$pts = c(`2FGM` = 2, `3FGM` = 3, FTM = 1)[g$PLAYTYPE]; g$pts[is.na(g$pts)] = 0
