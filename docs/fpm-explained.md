@@ -8,7 +8,7 @@ plain-language companion to the technical documentation.
 Every impact metric is really after the same thing: when a guy is on the floor, does his team win the
 possession battle, and how much of that is actually him rather than the four teammates standing next to
 him? FPM answers that with one number, in points per 100 possessions above an average player. Zero is
-average. A good starter lands somewhere around +1 to +3. Stars are +4 and up.
+average. About +3 or better puts a player in a season's top 20, and the very best reach +6 to +7.
 
 ## Why the obvious approaches fall short
 
