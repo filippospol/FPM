@@ -70,6 +70,7 @@ Grouped by family, with a brief note on each. Links were valid at compile time.
 - **Jacobs, J. (Squared Statistics).** *Exercising Error under RAPM.* RAPM standard errors. https://squared2020.com/2019/10/03/exercising-error-quantifying-statistical-tests-under-rapm-part-iv/
 - **Hvattum, L. M. (2019).** *A comprehensive review of plus-minus ratings.* The literature map. https://www.researchgate.net/publication/335324879
 - **Terner, Z. & Franks, A. (2021).** *Modeling Player and Team Performance.* A box / APM / tracking survey. https://arxiv.org/abs/2007.10550
+- **Berry, G. (2026).** *Finding Empty Stats and Quiet Contributors with RAPM.* RAPM, with a focal-player variant, run against box stats to separate production that helps the team from "empty stats" that don't move team totals, and to surface quiet contributors the box score misses. https://georgeberry.substack.com/p/finding-empty-stats-and-quiet-contributors
 
 ### All-in-one metrics and box priors (the architecture FPM mirrors)
 
