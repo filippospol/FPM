@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* apply a remembered theme before the page paints */try{var t=localStorage.getItem("fpm-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <title>FPM - Leaderboard</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 <meta name="description" content="The FPM leaderboard: EuroLeague player impact for every season since 2007-08, split into offense and defense.">
 <style>
@@ -13,45 +14,44 @@
 
 /* controls */
 .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:28px 0 0}
-select,input{font:400 13.5px/1 var(--f-sans);color:var(--text);background:var(--panel);
-  border:1px solid var(--line-2);border-radius:var(--r);padding:12px 14px}
+select,input{font:400 14px/1 var(--f-sans);color:var(--text);background:var(--panel);
+  border:1px solid var(--rule);border-radius:var(--r);padding:12px 14px}
 #team{max-width:230px}
 input{flex:1;min-width:190px}
 input::placeholder{color:var(--faint)}
-select:focus,input:focus{outline:1px solid var(--accent);outline-offset:0}
-.legend{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--faint);flex-wrap:wrap}
+select:focus,input:focus{outline:1px solid var(--text);outline-offset:0}
+.legend{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .key{display:inline-flex;align-items:center;gap:6px}
 .chip{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px}
 .chip.neg{background:rgba(var(--neg),.85)}
 .chip.pos{background:rgba(var(--pos),.85)}
-.count{margin-left:auto;font:400 11.5px var(--f-mono);letter-spacing:.04em;color:var(--faint);white-space:nowrap}
+.count{margin-left:auto;font:400 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 
-/* table, on its own panel */
-.scroll{margin-top:16px;background:var(--panel);border:1px solid var(--line-2);border-radius:calc(var(--r) + 6px);padding:2px 8px 6px}
+/* table, set straight on the page like a ledger: a rule under the header, hairlines between rows */
+.scroll{margin-top:18px}
 table{width:100%;border-collapse:separate;border-spacing:0}
-thead th{position:sticky;top:0;z-index:20;background:var(--panel);
-  font:500 10.5px/1 var(--f-sans);letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
-  text-align:right;padding:18px 10px 14px;border-bottom:1px solid var(--line-2);
+thead th{position:sticky;top:0;z-index:20;background:var(--bg);
+  font:500 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  text-align:right;padding:16px 10px 12px;border-bottom:1px solid var(--line);
   cursor:pointer;white-space:nowrap;user-select:none}
 thead th.l{text-align:left}
-thead th:hover{color:var(--sec)}
+thead th:hover{color:var(--text)}
 thead th.on{color:var(--text)}
-.ar{color:var(--muted);font-size:9px;margin-left:3px}
-tbody td{font:400 13.5px var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;padding:11px 10px;vertical-align:middle;
+.ar{color:var(--text);font-size:9px;margin-left:3px}
+tbody td{font:400 14px var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;padding:12px 10px;vertical-align:middle;
   border-bottom:1px solid var(--line-2);white-space:nowrap;color:var(--sec)}
 tbody td.l{text-align:left}
-tbody tr:last-child td{border-bottom:0}
 tbody tr:hover td{background:var(--hover)}
 .rankh{width:42px;cursor:default}
-.rankh:hover{color:var(--faint)}
+.rankh:hover{color:var(--muted)}
 .rank{color:var(--faint)}
-.player{font:500 14px var(--f-sans);color:var(--text)}
-.team,.pos,.role{font:400 13px var(--f-sans);color:var(--muted)}
-/* FPM: a rounded chip, coloured by how far above or below average */
+.player{font:500 15px var(--f-sans);color:var(--text)}
+.team,.pos,.role{font:400 13.5px var(--f-sans);color:var(--muted)}
+/* FPM: a chip coloured by how far above or below average */
 td.fpm{width:80px;padding:6px}
-.fchip{border-radius:calc(var(--r) + 2px);padding:7px 0 6px;text-align:center}
-.fpm .v{display:block;font:500 14px/1.1 var(--f-mono);color:#fff}
-.fpm .pc{display:block;font:400 9.5px var(--f-mono);color:rgba(255,255,255,.62);margin-top:3px}
+.fchip{border-radius:var(--r);padding:7px 0 6px;text-align:center}
+.fpm .v{display:block;font:500 14px/1.1 var(--f-mono);color:var(--chip-text)}
+.fpm .pc{display:block;font:400 9.5px var(--f-mono);color:var(--chip-sub);margin-top:3px}
 td .up{color:var(--pos-text)}
 td .dn{color:var(--neg-text)}
 .se-col{display:none}
@@ -63,9 +63,8 @@ table.show-se .se-col{display:table-cell}
 @media(max-width:620px){
   .c-role,.c-o,.c-d{display:none}
   table.show-se .se-col{display:none}
-  .scroll{padding:0 2px 4px}
-  thead th{padding:16px 6px 12px}
-  tbody td{padding:10px 6px}
+  thead th{padding:14px 6px 10px}
+  tbody td{padding:11px 6px}
   td.fpm{width:68px;padding:5px 4px}
 }
 @media(max-width:430px){.c-pos{display:none}}
@@ -82,6 +81,7 @@ table.show-se .se-col{display:table-cell}
       <a href="../">Home</a>
       <a href="./" aria-current="page">Leaderboard</a>
       <a href="../about/">About</a>
+      <button class="theme" id="theme" type="button" aria-label="Switch between light and dark"><span class="on-light">Dark</span><span class="on-dark">Light</span></button>
     </nav>
   </header>
 
@@ -148,7 +148,7 @@ function sgn(v){v=+v;return (v>=0?'+':'')+v.toFixed(1);}
 var CSS=getComputedStyle(document.documentElement);
 var POS=CSS.getPropertyValue('--pos').trim()||'52,128,214',NEG=CSS.getPropertyValue('--neg').trim()||'222,98,18';
 function heat(v){var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t);
-  return 'background:rgba('+(t>=0?POS:NEG)+','+(0.16+0.62*a).toFixed(3)+')';}
+  return 'background:rgba('+(t>=0?POS:NEG)+','+(0.18+0.66*a).toFixed(3)+')';}
 /* names arrive in capitals; show them in normal case, keeping initials and suffixes as they are */
 var KEEP={II:1,III:1,IV:1,AJ:1,CJ:1,DJ:1,JJ:1,KC:1,OJ:1,PJ:1,RJ:1,TJ:1};
 function nice(n){return n.split(' ').map(function(w){
