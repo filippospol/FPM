@@ -1,0 +1,107 @@
+/* FPM site: the shared house style. Matches the R-bball-projects look: Roboto Mono, dark greys,
+   hairline rules, black-grey-white only. Every page links this file, so the three stay in step. */
+:root{
+  --bg:#1a1a1a; --panel:#1e1e1e; --stripe:#232323; --hover:#262626;
+  --text:#ffffff; --sec:#cccccc; --muted:#8e8e8e; --faint:#777777;
+  --line:#555555; --line-2:#333333; --accent:#d4d7dd;
+  --gut:max(18px,env(safe-area-inset-left,0px));
+  --gutr:max(18px,env(safe-area-inset-right,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);
+  font-family:'Roboto Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 var(--gutr) 72px var(--gut)}
+
+/* masthead: wordmark on the left, page nav on the right */
+.mast{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:42px 0 0}
+.brand{color:inherit;text-decoration:none}
+.brand .row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.brand h1,.brand .word{font-weight:700;font-size:clamp(42px,8vw,66px);line-height:.9;letter-spacing:-.01em;margin:0}
+.brand .exp{font-size:11px;text-transform:uppercase;letter-spacing:.24em;color:var(--muted);padding-bottom:7px}
+.mark{height:3px;width:58px;background:var(--accent);margin:15px 0 0}
+.nav{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.nav a{font:600 12px/1 'Roboto Mono',monospace;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--sec);text-decoration:none;border:1px solid var(--line);border-radius:3px;padding:10px 14px}
+.nav a:hover{color:var(--text);border-color:var(--text)}
+.nav a[aria-current="page"]{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+
+/* intro copy under the masthead */
+.lede{max-width:62ch;margin:20px 0 0;font-size:13.5px;line-height:1.7;color:var(--sec)}
+.lede+.lede{margin-top:12px}
+.lede b{color:var(--text);font-weight:600}
+.credit{margin:14px 0 0;font-size:12px;color:var(--muted);letter-spacing:.02em}
+.credit a,footer a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--line-2)}
+.credit a:hover,footer a:hover{color:var(--text);border-bottom-color:var(--text)}
+.rule{height:2px;background:var(--line);margin:22px 0 0}
+.label{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+
+footer{margin-top:26px;font-size:11px;line-height:1.75;color:var(--muted);letter-spacing:.01em}
+footer .by{margin-top:8px}
+
+/* home: the scale strip and the three ways in */
+.scale{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0 0}
+.scale div{padding:18px 16px 4px 0}
+.scale div+div{padding-left:16px;border-left:1px solid var(--line-2)}
+.scale .n{display:block;font-size:30px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.scale .t{display:block;margin-top:6px;font-size:12px;line-height:1.55;color:var(--muted)}
+.ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:30px 0 0}
+.way{display:block;color:inherit;text-decoration:none;border:1px solid var(--line-2);border-radius:4px;
+  padding:20px 20px 22px;background:var(--panel)}
+.way:hover{border-color:var(--text)}
+.way .h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  font-size:16px;font-weight:700;color:var(--text)}
+.way .h span{color:var(--muted);font-weight:500}
+.way:hover .h span{color:var(--text)}
+.way p{margin:10px 0 0;font-size:12.5px;line-height:1.65;color:var(--sec)}
+
+/* about: long-form reading with a table of contents beside it */
+.doc{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;margin-top:8px}
+.toc{position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto;padding:26px 0 0}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc>ol>li{margin:0 0 18px}
+.toc>ol>li>a{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sec)}
+.toc li li{margin:7px 0 0}
+.toc li li a{font-size:12px;color:var(--muted)}
+.toc a{text-decoration:none;line-height:1.45;display:inline-block}
+.toc a:hover,.toc a.on{color:var(--text)}
+.prose{max-width:72ch;font-size:14px;line-height:1.75;color:var(--sec)}
+.prose .part{padding-top:6px}
+.prose .part+.part{margin-top:56px;border-top:2px solid var(--line)}
+.prose h2{font-size:clamp(22px,3.4vw,28px);font-weight:700;line-height:1.2;color:var(--text);
+  letter-spacing:-.01em;margin:28px 0 14px}
+.prose h3{font-size:17px;font-weight:700;color:var(--text);margin:38px 0 10px}
+.prose h4{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:30px 0 10px}
+.prose p{margin:0 0 14px}
+.prose strong{color:var(--text);font-weight:600}
+.prose em{color:var(--text);font-style:italic}
+.prose ul,.prose ol{margin:0 0 16px;padding-left:20px}
+.prose li{margin:0 0 9px;font-size:13.5px;line-height:1.65}
+.prose li::marker{color:var(--faint)}
+.prose a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.prose a:hover{color:var(--text);border-bottom-color:var(--text)}
+.prose code{font:500 12.5px 'Roboto Mono',monospace;background:var(--panel);border:1px solid var(--line-2);
+  border-radius:3px;padding:1px 5px;color:var(--text)}
+.prose h2,.prose h3,.prose h4{scroll-margin-top:20px}
+.status{color:var(--muted);font-size:13px;padding:30px 0}
+
+@media(max-width:1000px){
+  .doc{grid-template-columns:1fr;gap:0}
+  .toc{position:static;max-height:none;border-bottom:1px solid var(--line-2);padding:20px 0 14px}
+  .toc li li{display:none}
+  .toc>ol{display:flex;flex-wrap:wrap;gap:8px 22px}
+  .toc>ol>li{margin:0}
+}
+@media(max-width:760px){
+  .ways{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .mast{flex-wrap:wrap}
+  .scale{grid-template-columns:1fr}
+  .scale div+div{padding-left:0;border-left:0;border-top:1px solid var(--line-2)}
+  .scale div{padding:14px 0 6px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}

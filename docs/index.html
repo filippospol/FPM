@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FPM · Fair Plus-Minus</title>
+<meta name="description" content="Fair Plus-Minus: a EuroLeague player impact metric, with a leaderboard for every season since 2007-08.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <a class="brand" href="./">
+      <div class="row"><h1>FPM</h1><span class="exp">Fair Plus-Minus</span></div>
+      <div class="mark"></div>
+    </a>
+    <nav class="nav" aria-label="Site">
+      <a href="./" aria-current="page">Home</a>
+      <a href="leaderboard/">Leaderboard</a>
+      <a href="about/">About</a>
+    </nav>
+  </header>
+
+  <p class="lede">Fair Plus-Minus is a player impact metric built for the EuroLeague. It estimates how
+    much a player helps his team outscore the opponent per 100 possessions, once you account for the
+    teammates next to him and the players he is up against.</p>
+  <p class="lede">It starts from the box score, checks it against what the scoreboard actually did with him
+    on the floor, and grades every shot by how good it was rather than whether it went in. Each season is
+    judged against its own league, all the way back to 2007&#8209;08, and the number is split into an
+    <b>offensive</b> and a <b>defensive</b> half.</p>
+  <div class="credit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
+  <div class="rule"></div>
+
+  <div class="scale" aria-label="Reading the number">
+    <div><span class="n">0</span><span class="t">An average rotation player.</span></div>
+    <div><span class="n">+3</span><span class="t">Roughly where a season's top 20 starts.</span></div>
+    <div><span class="n">+6 to +7</span><span class="t">The best players in the league.</span></div>
+  </div>
+
+  <div class="ways">
+    <a class="way" href="leaderboard/">
+      <div class="h">Leaderboard <span>&rarr;</span></div>
+      <p>Every player and every season since 2007&#8209;08. Sort by the total, offense or defense, filter by
+        team, or look someone up by name.</p>
+    </a>
+    <a class="way" href="about/">
+      <div class="h">About <span>&rarr;</span></div>
+      <p>How it works in plain words, the full design notes with every source, and the places where it
+        still gets things wrong.</p>
+    </a>
+    <a class="way" href="https://github.com/filippospol/FPM" target="_blank" rel="noopener">
+      <div class="h">Repository <span>&nearr;</span></div>
+      <p>The data, the scrapers and the documentation on GitHub. The data is open, so feel free to build
+        on it.</p>
+    </a>
+  </div>
+
+  <footer>
+    <span id="updated">Updated through the season, round by round.</span>
+    <div class="by">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a>.</div>
+  </footer>
+</div>
+<script>
+/* show when the board was last refreshed; quietly keep the default line if the file can't be read */
+(function(){
+  function grab(){
+    return fetch('leaderboard/fpm.json').then(function(r){if(!r.ok)throw 0;return r.json();})
+      .catch(function(){return fetch('https://raw.githubusercontent.com/filippospol/FPM/main/docs/leaderboard/fpm.json',{cache:'no-store'}).then(function(r){return r.json();});});
+  }
+  grab().then(function(m){
+    var d=new Date(m.generated);if(isNaN(d))return;
+    var mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var lab='';(m.seasons||[]).forEach(function(s){if(s.code===m.current)lab=s.label;});
+    document.getElementById('updated').textContent='Last updated '+d.getUTCDate()+' '+mon[d.getUTCMonth()]+' '+
+      d.getUTCFullYear()+(lab?' · latest season '+lab:'')+'.';
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>

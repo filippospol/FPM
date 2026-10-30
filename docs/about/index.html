@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FPM · About</title>
+<meta name="description" content="How Fair Plus-Minus works, the design notes and sources behind it, and what this project shares.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <a class="brand" href="../">
+      <div class="row"><h1>FPM</h1><span class="exp">Fair Plus-Minus</span></div>
+      <div class="mark"></div>
+    </a>
+    <nav class="nav" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="../leaderboard/">Leaderboard</a>
+      <a href="./" aria-current="page">About</a>
+    </nav>
+  </header>
+
+  <p class="lede">How FPM works, why it is built the way it is, and where it falls short. The plain-English
+    part is the place to start; the design notes carry the detail and every source.</p>
+  <div class="credit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
+  <div class="rule"></div>
+
+  <div class="doc">
+    <aside class="toc" aria-label="On this page"><ol id="toc"></ol></aside>
+    <main class="prose" id="doc"><div class="status">Loading&hellip;</div></main>
+  </div>
+
+  <footer>
+    The three parts of this page are kept as markdown files in the repository, so they can be read there too.
+    <div class="by">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a>.</div>
+  </footer>
+</div>
+<script>
+/* The page is assembled from the three markdown files next to it. A small renderer covers what the
+   files use (headings, paragraphs, lists, bold, italics, inline code, links), so nothing is loaded
+   from outside and editing a .md file is all it takes to update this page. */
+var PARTS=[{file:'fpm-explained.md',id:'plain'},{file:'fpm-design.md',id:'design'},{file:'fpm-scope.md',id:'scope'}];
+var RAW='https://raw.githubusercontent.com/filippospol/FPM/main/docs/about/';
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function host(u){return u.replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0];}
+function inline(s){
+  var codes=[];
+  s=esc(s).replace(/`([^`]+)`/g,function(_,c){codes.push(c);return '\u0000'+(codes.length-1)+'\u0000';});
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s=s.replace(/(^|[\s(])(https?:\/\/[^\s<)]*[^\s<).,;:])/g,function(_,p,u){
+    return p+'<a href="'+u+'" title="'+u+'" target="_blank" rel="noopener">'+host(u)+'</a>';});
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g,'$1<em>$2</em>');
+  return s.replace(/\u0000(\d+)\u0000/g,function(_,i){return '<code>'+codes[+i]+'</code>';});
+}
+function slug(s){return s.toLowerCase().replace(/<[^>]+>/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+
+/* markdown -> html; '#' becomes the part title (h2), '##' a section (h3), '###' a group (h4) */
+function render(src,pid,toc){
+  var lines=src.replace(/\r/g,'').split('\n'),out=[],para=[],list=null,cur=null;
+  function fp(){if(para.length){out.push('<p>'+inline(para.join(' '))+'</p>');para=[];}}
+  function fl(){if(list){out.push('<'+list.t+'>'+list.items.map(function(x){return '<li>'+inline(x)+'</li>';}).join('')+'</'+list.t+'>');list=null;}}
+  lines.forEach(function(ln){
+    var h=ln.match(/^(#{1,6})\s+(.*)$/),b=ln.match(/^\s*[-*]\s+(.*)$/),n=ln.match(/^\s*\d+\.\s+(.*)$/);
+    if(/^\s*$/.test(ln)){fp();fl();return;}
+    if(h){fp();fl();var lvl=Math.min(h[1].length+1,4),txt=h[2].trim(),id=pid+'-'+slug(txt);
+      if(lvl===2)id=pid;
+      out.push('<h'+lvl+' id="'+id+'">'+inline(txt)+'</h'+lvl+'>');
+      if(lvl===2){cur={id:id,text:txt,kids:[]};toc.push(cur);}
+      else if(lvl===3&&cur)cur.kids.push({id:id,text:txt});
+      return;}
+    if(b||n){fp();var t=b?'ul':'ol';if(!list||list.t!==t){fl();list={t:t,items:[]};}list.items.push((b||n)[1]);return;}
+    if(list&&/^\s{2,}\S/.test(ln)){list.items[list.items.length-1]+=' '+ln.trim();return;}
+    fl();para.push(ln.trim());
+  });
+  fp();fl();return out.join('\n');
+}
+function grab(f){
+  var ok=function(r){if(!r.ok)throw 0;return r.text();},md=function(t){if(/^\s*</.test(t))throw 0;return t;};
+  return fetch(f).then(ok).then(md).catch(function(){return fetch(RAW+f,{cache:'no-store'}).then(ok).then(md);});
+}
+Promise.all(PARTS.map(function(p){return grab(p.file);})).then(function(texts){
+  var toc=[],html=texts.map(function(t,i){return '<section class="part">'+render(t,PARTS[i].id,toc)+'</section>';}).join('');
+  document.getElementById('doc').innerHTML=html;
+  document.getElementById('toc').innerHTML=toc.map(function(p){
+    return '<li><a href="#'+p.id+'">'+inline(p.text)+'</a>'+(p.kids.length?'<ol>'+p.kids.map(function(k){
+      return '<li><a href="#'+k.id+'">'+inline(k.text)+'</a></li>';}).join('')+'</ol>':'')+'</li>';}).join('');
+  if(location.hash){var el=document.getElementById(location.hash.slice(1));if(el)el.scrollIntoView();}
+  /* highlight the section being read */
+  var links={};document.querySelectorAll('#toc a').forEach(function(a){links[a.getAttribute('href').slice(1)]=a;});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&links[e.target.id]){
+      document.querySelectorAll('#toc a.on').forEach(function(a){a.classList.remove('on');});links[e.target.id].classList.add('on');}});},
+      {rootMargin:'0px 0px -70% 0px'});
+    document.querySelectorAll('#doc h2,#doc h3').forEach(function(h){io.observe(h);});
+  }
+}).catch(function(){document.getElementById('doc').innerHTML='<div class="status">Could not load this page. The same text is in the repository under docs/about.</div>';});
+</script>
+</body>
+</html>
