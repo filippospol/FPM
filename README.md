@@ -11,13 +11,13 @@ for the EuroLeague, and tuned to measure how good a player is *now*.
 
 FPM combines a regularized on/off rating (RAPM) anchored to an era-neutral, position-aware
 box-score prior. The box score sets what to expect, the scoreboard says what actually happened, and
-the blend is both stable and honest. The settings are chosen by how well they predict the next season, not by hand.
+the blend is both stable and honest. The settings are chosen by how well they predict the next season, not by hand, and the tests that choose them live with the model.
 
 ## Key elements
 
 - **Offense and defense components**: O-FPM and D-FPM, split out.
 - **Prior-informed RAPM**: single-season on/off anchored to a box-score prior, so one noisy season can't run away.
-- **Luck adjustment**: impact is measured on *expected* points (shot quality), so shooting variance doesn't leak in.
+- **Real points, not expected ones**: the on/off side counts the actual score. Valuing shots at league rates was tried and predicted the next season worse, so shooting luck is left to the box-score prior and the shrink to damp.
 - **Era-neutral**: every season from 2007-08 to today, each player judged against his own league.
 - **Position-aware**: guard / wing / forward / big tiers, plus a box-score role tag (Star … Too Few Games).
 - **Age curve**: an empirical aging curve pulls veterans off their primes.
