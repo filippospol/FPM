@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* apply a remembered theme before the page paints */try{var t=localStorage.getItem("fpm-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <title>FPM - About</title>
 <meta name="description" content="How Fair Plus-Minus works, why it is built the way it is, and the work it builds on.">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 </head>
 <body data-top>
@@ -20,6 +21,7 @@
       <a href="../">Home</a>
       <a href="../leaderboard/">Leaderboard</a>
       <a href="./" aria-current="page">About</a>
+      <button class="theme" id="theme" type="button" aria-label="Switch between light and dark"><span class="on-light">Dark</span><span class="on-dark">Light</span></button>
     </nav>
   </header>
 
