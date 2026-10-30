@@ -22,8 +22,8 @@ PIPM, BPM, DARKO and RAPTOR all do the same two things under the branding: start
 (a model of what a player's production should be worth), then let the regularized on/off pull that prior
 around. The box score is steady but blind; the scoreboard sees everything but lies; put one on top of
 the other and you get something that's both. That is the skeleton of FPM: a prior-informed RAPM, offense
-and defense split out, fit on expected points rather than raw scoreboard points, with single-season
-on/off pulled back toward the prior so one hot month can't run away with the leaderboard.
+and defense split out, fit on the actual score, with single-season offensive on/off pulled back
+toward the prior so one hot month can't run away with the leaderboard.
 
 The rest is a matter of doing it for the EuroLeague instead of importing NBA numbers, which matters more
 than it sounds. The WINSCORE authors showed that box-score weights fit on the NBA don't transfer to
@@ -35,17 +35,22 @@ harder to pin down here. So the prior is era-neutral, position-aware, and padded
 for thin samples. Era-neutral means every player is judged against his own season, since the three-point
 line moved out and the format of the competition changed more than once over the years.
 
-The luck handling is the part that sets FPM apart from a textbook RAPM, and it is worth dwelling on. A
+Luck handling is the one place the design changed after testing, and it is worth dwelling on. A
 standard RAPM regresses the actual point margin of each possession, so made shots help and missed shots
-hurt, and a hot or cold shooting run feeds straight into the ratings. FPM changes the target. Instead of
-actual points, the regression is fit on expected points from the shot detail: every shot is valued by
-what a shot of that type and from that spot is worth on average, not by whether it happened to fall.
-Grade the shot, not the make. The result is an expected-points RAPM, with ratings in
-expected-points-per-100, where shooting variance, the single biggest source of single-season noise,
-never enters the signal in the first place. Fitting plus-minus on an alternative response like this goes
-back to Macdonald's ridge APM and the expected-goals plus-minus common in hockey, with LUMA on
-court-share as the reference point for a possession-level, shot-aware version. On top of that sit a
-couple of ideas from the dynamic-talent world: Engelmann's aging-to-peak and opponent-luck notes, and
+hurt, and a hot or cold shooting run feeds straight into the ratings. The first version of FPM changed
+the target: instead of actual points, the regression was fit on expected points from the shot detail,
+every shot valued by what a shot of that type from that spot is worth on average, not by whether it
+fell. Grade the shot, not the make. The idea follows Macdonald's ridge APM with a custom response and
+the expected-goals plus-minus common in hockey, with LUMA on court-share as the reference for a
+possession-level, shot-aware version. It is sound in principle and it failed the next-season test. At
+every ridge penalty, with or without the prior, a regression on the actual score predicted the following
+season better, and so did two softer versions, one valuing shots at each shooter's own stabilized rate
+and one adjusting the defensive side only. The reading is that in the EuroLeague shot-making and
+forcing misses are persistent skills, and valuing every shot at the league rate removes them along with
+the noise. So the regression is fit on the actual score, and the box-score prior, which carries a
+stabilized true-shooting rate, together with the offensive shrink is what keeps a hot month in check.
+On top of that sit a couple of ideas from the dynamic-talent world: Engelmann's aging-to-peak and
+opponent-luck notes, and
 Medvedovsky and Patton's DARKO, which treats talent as a moving thing you keep updating rather than a season you average.
 That's where the aging curve and the recency decay come from. A player's rating leans mostly on his own
 recent form, with older seasons fading out and the current season loosened so it tracks how he's playing
@@ -54,8 +59,11 @@ now.
 The last choice is a habit more than a feature. The tuning parameters are set by retrodiction, so a
 piece stays in only if it helps predict what a player does next, not because it makes the current
 leaderboard look right. That rule threw out a few reasonable-sounding ideas: docking players who change
-teams, piling shot-location features into the prior, and a four-factor prior all failed the test, so none
-of them made it in.
+teams, piling shot-location features into the prior, a four-factor prior and, as above, the
+expected-points target all failed the test, so none of them made it in. The tests live in the engine
+next to the model, and every setting has a number from them: the ridge penalty, how far the offensive
+on/off is pulled back toward the prior (halfway; the defensive side is left alone, since shrinking it
+hurt at every setting) and the stiffness of the recency filter.
 
 ## Garbage time
 
@@ -92,7 +100,7 @@ history, parallel work, and ideas that did not end up in the model.
 
 - **Rosenbaum, D. (2004).** *Measuring How NBA Players Help Their Teams Win.* The original box-score plus-minus. https://www.82games.com/comm30.htm
 - **Sill, J. (2010).** *Improved NBA Adjusted +/− Using Regularization.* MIT Sloan. The founding ridge-RAPM paper. https://supermariogiacomazzo.github.io/STOR538_WEBSITE/Articles/Basketball/Basketball_Sill.pdf
-- **Macdonald, B. (2012).** *Adjusted Plus-Minus using Ridge Regression.* Ridge APM with a custom response; the expected-points template. https://arxiv.org/abs/1201.0317
+- **Macdonald, B. (2012).** *Adjusted Plus-Minus using Ridge Regression.* Ridge APM with a custom response; the template for the expected-points version that was tried and dropped. https://arxiv.org/abs/1201.0317
 - **Jacobs, J. (Squared Statistics).** *Exercising Error under RAPM.* RAPM standard errors. https://squared2020.com/2019/10/03/exercising-error-quantifying-statistical-tests-under-rapm-part-iv/
 
 *Further reading:*
@@ -113,7 +121,7 @@ history, parallel work, and ideas that did not end up in the model.
 - **BBall Index (LEBRON).** Box prior plus role-aware RAPM. https://www.bball-index.com/lebron-introduction/
 - **FiveThirtyEight (RAPTOR).** A box/tracking and on-off blend. https://fivethirtyeight.com/methodology/how-our-raptor-metric-works/
 - **Medvedovsky, K. & Patton, A. (DARKO).** A daily-updating talent model with aging built in. https://kmedved.com/
-- **LUMA (court-share).** A possession-level, shot-aware model; the target. https://court-share.com/luma
+- **LUMA (court-share).** A possession-level, shot-aware model; the reference for the expected-points version that was tried and dropped. https://court-share.com/luma
 
 *Further reading:*
 
@@ -163,7 +171,7 @@ history, parallel work, and ideas that did not end up in the model.
 *Further reading:*
 
 - **Cervone, D., D'Amour, A., Bornn, L. & Goldsberry, K. (2014).** *POINTWISE: Predicting Points and Valuing Decisions in Real Time.* Expected possession value; grading the process rather than the outcome, in its fullest tracking form. https://arxiv.org/abs/1408.0777
-- **"Biases in Expected Goals Models Confound Finishing Ability" (2024).** Context-free expected values absorb part of real shooting skill, so good shooters can read as lucky. The main caveat for league-rate expected points. https://arxiv.org/abs/2401.09940
+- **"Biases in Expected Goals Models Confound Finishing Ability" (2024).** Context-free expected values absorb part of real shooting skill, so good shooters can read as lucky. This is exactly how the expected-points target failed here. https://arxiv.org/abs/2401.09940
 - **Scott, Gee et al. (2025).** *Shot charts estimation.* Spatial shot-chart modeling. https://link.springer.com/article/10.1007/s00180-025-01599-1
 
 ### Box-score frameworks, possessions, roles
@@ -236,16 +244,15 @@ the scale is set from past seasons, but comparing a 2009 rating to a 2026 one st
 within-season standardization fully absorbs the changes in rules, pace and format. It mostly does, but
 there's no guarantee.
 
-**The prior learns from every completed season.** The box-score prior is trained on all finished
-seasons and applied to each of them, so the historical boards are fit partly on their own data. Only
-the season in progress is never in the prior's training set. This keeps the prior current with how the
-league actually plays, at the cost of a clean out-of-sample read on past seasons: a backtest is honest
-only for the live season, which the model has genuinely never seen.
+**The first four seasons' prior is in-sample.** Each season's box-score prior is trained only on the
+seasons before it, the same rule the live season follows, so the backtests are honest from 2011-12 on.
+The first four seasons (2007-08 to 2010-11) share a prior trained on those same four, since there is
+nothing earlier to learn from.
 
 **Data quality degrades in the early seasons.** Shot detail, coach fields and some box lines are less
-clean before roughly 2015-16, so the expected-points target and a few features are weaker in those early
-years.
+clean before roughly 2015-16, so a few features are weaker in those early years.
 
-**Luck adjustment is partial.** Grading shots on expected points removes the biggest luck term, which is
-field-goal variance, but not all of it. Opponent free-throw variance, loose-ball and foul-call luck, and
-small-sample schedule luck aren't modeled.
+**Luck is damped, not removed.** The regression counts the real score, so a hot or cold shooting run
+does reach a single-season rating; the box-score anchor and the offensive shrink soften it rather than
+take it out. Opponent free-throw variance, loose-ball and foul-call luck, and small-sample schedule luck
+aren't modeled either.

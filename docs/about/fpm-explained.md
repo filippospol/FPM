@@ -38,13 +38,14 @@ guy from topping the leaderboard off a hot three weeks.
 
 From there the number splits into an offensive and a defensive half that add back to the total, so you
 can see where a player's value is actually coming from. Plenty of guys are a clear plus on one end and a
-minus on the other. It also tries to look past luck, and this is where FPM parts ways with an ordinary
-plus-minus. A normal plus-minus counts the points that actually went on the board, so a night of hot or
-cold shooting lands straight in a player's rating. FPM counts what the shots were worth instead. A
-wide-open three is a good shot whether it swishes or rims out, so a player is graded on the kinds of
-shots he and his team take and give up, not on how many happen to fall. Shooting luck is the biggest
-reason a rating looks off in the short run, and grading the shot instead of the bounce takes most of
-that out.
+minus on the other.
+
+One thing it deliberately doesn't do is strip out shooting luck directly. An earlier version counted
+what the shots were worth instead of whether they went in: a wide-open three was valued at the league
+rate whether it swished or rimmed out. It sounded right and tested badly. In this league, making shots
+and forcing misses are skills that carry over from one season to the next, and grading every shot at
+the league average throws that away along with the noise. So the on/off side counts the real score,
+and the box-score anchor is what keeps one hot month from running away with a rating.
 
 A couple of things keep the comparisons honest. The EuroLeague of 2009 barely resembles today's: the
 three-point line was pushed further out, the competition's format has been reworked more than once, and
@@ -93,6 +94,6 @@ situation, not a context-free skill score.
 
 Put it all together and FPM is really one number trying to be honest about two things at once: what a
 player actually did, and how much of it he'll keep doing. It trusts the scoreboard but checks it against
-the box score, throws out lucky shooting, adjusts for era and position, and remembers that players age
+the box score, leans on that box score when the sample is thin, adjusts for era and position, and remembers that players age
 and that this season counts most. No single piece is clever on its own. The point is that together they
 cover each other's blind spots.
