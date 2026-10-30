@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FPM - About</title>
-<meta name="description" content="How Fair Plus-Minus works, the design notes and sources behind it, and what this project shares.">
+<meta name="description" content="How Fair Plus-Minus works, why it is built the way it is, and the work it builds on.">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 </head>
-<body>
+<body data-top>
 <div class="wrap">
   <header class="mast">
     <a class="brand" href="../">
@@ -23,9 +23,12 @@
     </nav>
   </header>
 
-  <p class="lede">How FPM works, why it is built the way it is, and where it falls short. The plain-English
-    part is the place to start; the design notes carry the detail and every source.</p>
-  <div class="credit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
+  <div class="credit">
+    <span>Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></span>
+    <span id="updated"></span>
+  </div>
+
+  <p class="lede">How FPM works, why it is built the way it is, and the work it builds on.</p>
   <div class="rule"></div>
 
   <div class="doc">
@@ -34,15 +37,15 @@
   </div>
 
   <footer>
-    The three parts of this page are kept as markdown files in the repository, so they can be read there too.
-    <div class="by">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a>.</div>
+    This page is built from markdown files in the repository, so it can be read there too.
+    <div class="by">Feedback: <a href="mailto:polyzos.filippos@gmail.com">polyzos.filippos@gmail.com</a></div>
   </footer>
 </div>
 <script>
-/* The page is assembled from the three markdown files next to it. A small renderer covers what the
+/* The page is assembled from two markdown files next to it. A small renderer covers what the
    files use (headings, paragraphs, lists, bold, italics, inline code, links), so nothing is loaded
    from outside and editing a .md file is all it takes to update this page. */
-var PARTS=[{file:'fpm-explained.md',id:'plain'},{file:'fpm-design.md',id:'design'},{file:'fpm-scope.md',id:'scope'}];
+var PARTS=[{file:'fpm-explained.md',id:'method'},{file:'fpm-acknowledgements.md',id:'thanks'}];
 var RAW='https://raw.githubusercontent.com/filippospol/FPM/main/docs/about/';
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -51,8 +54,10 @@ function inline(s){
   var codes=[];
   s=esc(s).replace(/`([^`]+)`/g,function(_,c){codes.push(c);return '\u0000'+(codes.length-1)+'\u0000';});
   s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s=s.replace(/\[([^\]]+)\]\((mailto:[^)\s]+)\)/g,'<a href="$2">$1</a>');
   s=s.replace(/(^|[\s(])(https?:\/\/[^\s<)]*[^\s<).,;:])/g,function(_,p,u){
     return p+'<a href="'+u+'" title="'+u+'" target="_blank" rel="noopener">'+host(u)+'</a>';});
+  s=s.replace(/(^|[\s(])([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g,'$1<a href="mailto:$2">$2</a>');
   s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g,'$1<em>$2</em>');
   return s.replace(/\u0000(\d+)\u0000/g,function(_,i){return '<code>'+codes[+i]+'</code>';});
@@ -100,5 +105,6 @@ Promise.all(PARTS.map(function(p){return grab(p.file);})).then(function(texts){
   }
 }).catch(function(){document.getElementById('doc').innerHTML='<div class="status">Could not load this page. The same text is in the repository under docs/about.</div>';});
 </script>
+<script src="../assets/site.js" data-json="../leaderboard/fpm.json"></script>
 </body>
 </html>

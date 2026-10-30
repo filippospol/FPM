@@ -5,52 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FPM - Leaderboard</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 <meta name="description" content="The FPM leaderboard: EuroLeague player impact for every season since 2007-08, split into offense and defense.">
 <style>
 /* Page-specific styles. Tokens, masthead, nav, intro and footer live in ../assets/site.css. */
 
 /* controls */
-.controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0 0}
-select,input{font:500 13px/1 'Roboto Mono',monospace;color:var(--text);background:var(--panel);
-  border:1px solid var(--line-2);border-radius:3px;padding:11px 12px}
-select{text-transform:uppercase;letter-spacing:.06em}
-#team{text-transform:none;letter-spacing:.01em;max-width:230px}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:28px 0 0}
+select,input{font:400 13.5px/1 var(--f-sans);color:var(--text);background:var(--panel);
+  border:1px solid var(--line-2);border-radius:var(--r);padding:12px 14px}
+#team{max-width:230px}
 input{flex:1;min-width:190px}
-input::placeholder{color:var(--muted)}
-select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
-.legend{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);letter-spacing:.02em;flex-wrap:wrap}
+input::placeholder{color:var(--faint)}
+select:focus,input:focus{outline:1px solid var(--accent);outline-offset:0}
+.legend{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--faint);flex-wrap:wrap}
 .key{display:inline-flex;align-items:center;gap:6px}
-.chip{display:inline-block;width:14px;height:14px;border-radius:2px;border:1px solid var(--line-2);vertical-align:-3px}
-.count{margin-left:auto;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.chip{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px}
+.chip.neg{background:rgba(var(--neg),.85)}
+.chip.pos{background:rgba(var(--pos),.85)}
+.count{margin-left:auto;font:400 11.5px var(--f-mono);letter-spacing:.04em;color:var(--faint);white-space:nowrap}
 
-/* table */
-.scroll{margin-top:6px}
-table{width:100%;border-collapse:collapse}
-thead th{position:sticky;top:0;z-index:20;background:var(--bg);
-  font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);
-  text-align:right;padding:16px 10px 11px;border-bottom:2px solid var(--line);
+/* table, on its own panel */
+.scroll{margin-top:16px;background:var(--panel);border:1px solid var(--line-2);border-radius:calc(var(--r) + 6px);padding:2px 8px 6px}
+table{width:100%;border-collapse:separate;border-spacing:0}
+thead th{position:sticky;top:0;z-index:20;background:var(--panel);
+  font:500 10.5px/1 var(--f-sans);letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
+  text-align:right;padding:18px 10px 14px;border-bottom:1px solid var(--line-2);
   cursor:pointer;white-space:nowrap;user-select:none}
 thead th.l{text-align:left}
 thead th:hover{color:var(--sec)}
 thead th.on{color:var(--text)}
-.ar{color:var(--accent);font-size:9px;margin-left:3px}
-tbody td{font-size:13px;text-align:right;padding:13px 10px;vertical-align:middle;
+.ar{color:var(--muted);font-size:9px;margin-left:3px}
+tbody td{font:400 13.5px var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;padding:11px 10px;vertical-align:middle;
   border-bottom:1px solid var(--line-2);white-space:nowrap;color:var(--sec)}
 tbody td.l{text-align:left}
-tbody tr:nth-child(even) td{background:var(--stripe)}
+tbody tr:last-child td{border-bottom:0}
 tbody tr:hover td{background:var(--hover)}
 .rankh{width:42px;cursor:default}
-.rankh:hover{color:var(--muted)}
-.rank{color:var(--muted);font-variant-numeric:tabular-nums}
-.player{font-weight:600;color:var(--text)}
-.team,.pos,.role{color:var(--muted);font-size:12px;letter-spacing:.02em}
-.fpm{text-align:center;font-weight:700;color:var(--text);width:74px}
-.fpm .v{font-size:14px;display:block}
-.fpm .pc{display:block;font-size:9.5px;font-weight:500;color:var(--faint);margin-top:2px;letter-spacing:.04em}
-td .up{color:rgb(30,136,229)!important}   /* positive = blue (above-average swatch) */
-td .dn{color:rgb(216,27,96)!important}    /* negative = magenta (below-average swatch) */
+.rankh:hover{color:var(--faint)}
+.rank{color:var(--faint)}
+.player{font:500 14px var(--f-sans);color:var(--text)}
+.team,.pos,.role{font:400 13px var(--f-sans);color:var(--muted)}
+/* FPM: a rounded chip, coloured by how far above or below average */
+td.fpm{width:80px;padding:6px}
+.fchip{border-radius:calc(var(--r) + 2px);padding:7px 0 6px;text-align:center}
+.fpm .v{display:block;font:500 14px/1.1 var(--f-mono);color:#fff}
+.fpm .pc{display:block;font:400 9.5px var(--f-mono);color:rgba(255,255,255,.62);margin-top:3px}
+td .up{color:var(--pos-text)}
+td .dn{color:var(--neg-text)}
 .se-col{display:none}
 table.show-se .se-col{display:table-cell}
 .empty{display:none;padding:44px 4px;color:var(--muted);font-size:13px}
@@ -60,13 +63,15 @@ table.show-se .se-col{display:table-cell}
 @media(max-width:620px){
   .c-role,.c-o,.c-d{display:none}
   table.show-se .se-col{display:none}
-  .mast{flex-wrap:wrap}
+  .scroll{padding:0 2px 4px}
+  thead th{padding:16px 6px 12px}
+  tbody td{padding:10px 6px}
+  td.fpm{width:68px;padding:5px 4px}
 }
 @media(max-width:430px){.c-pos{display:none}}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
-<body>
+<body data-top>
 <div class="wrap">
   <header class="mast">
     <a class="brand" href="../">
@@ -80,11 +85,15 @@ table.show-se .se-col{display:table-cell}
     </nav>
   </header>
 
+  <div class="credit">
+    <span>Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></span>
+    <span id="updated"></span>
+  </div>
+
   <p class="lede">A EuroLeague player's on-court impact, in points per 100 possessions above an
     average player, split into <b>offense</b> and <b>defense</b>. It reads the quality of the shots
     a team takes and gives up rather than whether they fell. Zero is average; about +3 or better is a
     top-20 player in a season, and the best reach +6 to +7.</p>
-  <div class="credit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
   <div class="rule"></div>
 
   <div class="controls">
@@ -92,8 +101,8 @@ table.show-se .se-col{display:table-cell}
     <select id="team" aria-label="Team"></select>
     <input id="q" type="search" placeholder="Search player or team">
     <span class="legend">
-      <span class="key"><span class="chip" style="background:rgba(216,27,96,.78)"></span>below average</span>
-      <span class="key"><span class="chip" style="background:rgba(30,136,229,.78)"></span>above average</span>
+      <span class="key"><span class="chip neg"></span>below average</span>
+      <span class="key"><span class="chip pos"></span>above average</span>
       &middot; number in the box is the season percentile
     </span>
     <span class="count" id="count"></span>
@@ -123,8 +132,8 @@ table.show-se .se-col{display:table-cell}
 
   <footer>
     Regular season and the old Top&nbsp;16 only &middot; 2007-08 to 2026-27 &middot; minimum 400 possessions,
-    120 in the current season &middot; standard error (&plusmn;) shown on the current season &middot; updated through the season.
-    <div class="by">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a>.</div>
+    120 in the current season &middot; standard error (&plusmn;) shown on the current season.
+    <div class="by">Feedback: <a href="mailto:polyzos.filippos@gmail.com">polyzos.filippos@gmail.com</a></div>
   </footer>
 </div>
 
@@ -135,10 +144,17 @@ var state={season:"",team:"",q:"",k:"7",dir:-1};
 var NUM={3:1,4:1,5:1,6:1,7:1,8:1,9:1,10:1,11:1};
 
 function sgn(v){v=+v;return (v>=0?'+':'')+v.toFixed(1);}
-/* colour-blind-safe diverging: blue above average, magenta below */
+/* colour-blind-safe diverging: blue above average, vermillion below (colours in site.css) */
+var CSS=getComputedStyle(document.documentElement);
+var POS=CSS.getPropertyValue('--pos').trim()||'52,128,214',NEG=CSS.getPropertyValue('--neg').trim()||'222,98,18';
 function heat(v){var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t);
-  var c=t>=0?'30,136,229':'216,27,96';
-  return 'background:rgba('+c+','+(0.14+0.5*a).toFixed(3)+')';}
+  return 'background:rgba('+(t>=0?POS:NEG)+','+(0.16+0.62*a).toFixed(3)+')';}
+/* names arrive in capitals; show them in normal case, keeping initials and suffixes as they are */
+var KEEP={II:1,III:1,IV:1,AJ:1,CJ:1,DJ:1,JJ:1,KC:1,OJ:1,PJ:1,RJ:1,TJ:1};
+function nice(n){return n.split(' ').map(function(w){
+  if(KEEP[w]||w.length===1)return w;
+  w=w.toLowerCase().replace(/(^|[-'.\u00b4\u2019])(\p{L})/gu,function(m,p,c){return p+c.toUpperCase();});
+  return w.replace(/(^|-)Mc(\p{L})/gu,function(m,p,c){return p+'Mc'+c.toUpperCase();});}).join(' ');}
 function od(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+sgn(v)+'</span>';}
 
 function rows(){
@@ -165,7 +181,7 @@ function render(){
   for(var i=0;i<r.length;i++){var row=r[i],a=row.a;
     h+='<tr>'+
       '<td class="l rank">'+(showRank?rk[row.i]:'')+'</td>'+
-      '<td class="l player">'+a[0]+'</td>'+
+      '<td class="l player">'+nice(a[0])+'</td>'+
       '<td class="l team" title="'+(TEAMS[a[1]]||a[1])+'">'+a[1]+'</td>'+
       '<td class="l pos c-pos">'+a[2]+'</td>'+
       '<td class="l role c-role">'+(a[12]||'')+'</td>'+
@@ -173,7 +189,7 @@ function render(){
       '<td class="c-gp">'+a[4]+'</td>'+
       '<td class="c-min">'+a[5]+'</td>'+
       '<td class="c-poss">'+a[6]+'</td>'+
-      '<td class="fpm" style="'+heat(+a[7])+'"><span class="v">'+sgn(a[7])+'</span><span class="pc">'+a[11]+'</span></td>'+
+      '<td class="fpm"><div class="fchip" style="'+heat(+a[7])+'"><span class="v">'+sgn(a[7])+'</span><span class="pc">'+a[11]+'</span></div></td>'+
       '<td class="se-col c-se">&plusmn;'+(+a[10]).toFixed(1)+'</td>'+
       '<td class="c-o">'+od(a[8])+'</td>'+
       '<td class="c-d">'+od(a[9])+'</td>'+
@@ -225,5 +241,6 @@ Promise.all([grab('fpm.json'),grab('teams.json')]).then(function(res){
   META=res[0]||{};DATA=META.data||{};TEAMS=res[1]||{};boot();
 }).catch(function(){var e=$('empty');e.style.display='block';e.textContent='Could not load the leaderboard data.';});
 </script>
+<script src="../assets/site.js" data-json="fpm.json"></script>
 </body>
 </html>

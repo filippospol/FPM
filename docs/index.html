@@ -6,7 +6,7 @@
 <title>FPM - Fair Plus-Minus</title>
 <meta name="description" content="Fair Plus-Minus: a EuroLeague player impact metric, with a leaderboard for every season since 2007-08.">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -23,6 +23,11 @@
     </nav>
   </header>
 
+  <div class="credit">
+    <span>Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></span>
+    <span id="updated"></span>
+  </div>
+
   <p class="lede">Fair Plus-Minus, or FPM, is a player impact metric for the EuroLeague. It's built around
     a basic question: when a player is on the floor, does his team outscore the other one, and how much
     of that is actually down to him?</p>
@@ -36,30 +41,15 @@
     season since 2007&#8209;08 is on the <a href="leaderboard/">leaderboard</a>, and the current one
     keeps updating as the games are played.</p>
   <p class="lede">If you want to know how it works, or where it gets things wrong, it's all on the
-    <a href="about/">about page</a>. The data and the code that collects it are on
-    <a href="https://github.com/filippospol/FPM" target="_blank" rel="noopener">GitHub</a>, free for
-    anyone to use.</p>
-  <div class="credit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
+    <a href="about/">about page</a>. The data and the code that collects it are in the public
+    repository, free for anyone to use.</p>
+  <a class="repo" href="https://github.com/filippospol/FPM" target="_blank" rel="noopener">GitHub repository</a>
   <div class="rule"></div>
 
   <footer>
-    <span id="updated">The leaderboard updates through the season.</span>
-    <div class="by">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a>.</div>
+    Feedback: <a href="mailto:polyzos.filippos@gmail.com">polyzos.filippos@gmail.com</a>
   </footer>
 </div>
-<script>
-/* show when the leaderboard was last refreshed; keep the default line if the file can't be read */
-(function(){
-  function grab(){
-    return fetch('leaderboard/fpm.json').then(function(r){if(!r.ok)throw 0;return r.json();})
-      .catch(function(){return fetch('https://raw.githubusercontent.com/filippospol/FPM/main/docs/leaderboard/fpm.json',{cache:'no-store'}).then(function(r){return r.json();});});
-  }
-  grab().then(function(m){
-    var d=new Date(m.generated);if(isNaN(d))return;
-    var mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    document.getElementById('updated').textContent='Leaderboard last updated on '+d.getUTCDate()+' '+mon[d.getUTCMonth()]+' '+d.getUTCFullYear()+'.';
-  }).catch(function(){});
-})();
-</script>
+<script src="assets/site.js" data-json="leaderboard/fpm.json"></script>
 </body>
 </html>

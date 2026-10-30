@@ -1,7 +1,8 @@
-# FPM in plain English
+# Methodology
 
-This page explains what FPM measures and why it is built the way it is, without the math. It is a
-plain-language companion to the technical documentation.
+This page explains what FPM measures and why it is built the way it is, without the math. The
+technical detail, with the full bibliography, is in the
+[design notes](https://github.com/filippospol/FPM/blob/main/docs/about/fpm-design.md).
 
 ## What it's trying to do
 
