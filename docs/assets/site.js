@@ -1,7 +1,22 @@
-/* Shared bits for every page: the "last updated" date next to the credit line, and a back-to-top
-   button on the longer pages. The page sets data-json on this script tag to point at fpm.json. */
+/* Shared bits for every page: the theme switch, the "last updated" date next to the credit line,
+   and a back-to-top button on the longer pages. The page sets data-json on this script tag to
+   point at fpm.json. (The theme is applied before paint by the small script in each page's head;
+   this file only wires the switch.) */
 (function(){
   var me=document.currentScript,json=me&&me.getAttribute('data-json');
+
+  /* theme switch: cycles between light and dark; the choice is remembered, and clearing it
+     (by picking whatever the system has) goes back to following the system */
+  var sw=document.getElementById('theme');
+  if(sw){
+    sw.addEventListener('click',function(){
+      var root=document.documentElement;
+      var sys=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+      var cur=root.getAttribute('data-theme')||sys, next=cur==='dark'?'light':'dark';
+      if(next===sys){ root.removeAttribute('data-theme'); try{localStorage.removeItem('fpm-theme');}catch(e){} }
+      else { root.setAttribute('data-theme',next); try{localStorage.setItem('fpm-theme',next);}catch(e){} }
+    });
+  }
 
   var up=document.getElementById('updated');
   if(up&&json){
