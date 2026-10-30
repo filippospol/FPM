@@ -34,29 +34,13 @@ a{color:var(--accent)}
 .lede+.lede{margin-top:12px}
 .lede b{color:var(--text);font-weight:600}
 .credit{margin:14px 0 0;font-size:12px;color:var(--muted);letter-spacing:.02em}
-.credit a,footer a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--line-2)}
-.credit a:hover,footer a:hover{color:var(--text);border-bottom-color:var(--text)}
+.lede a,.credit a,footer a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--line-2)}
+.lede a:hover,.credit a:hover,footer a:hover{color:var(--text);border-bottom-color:var(--text)}
 .rule{height:2px;background:var(--line);margin:22px 0 0}
 .label{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 
 footer{margin-top:26px;font-size:11px;line-height:1.75;color:var(--muted);letter-spacing:.01em}
 footer .by{margin-top:8px}
-
-/* home: the scale strip and the three ways in */
-.scale{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0 0}
-.scale div{padding:18px 16px 4px 0}
-.scale div+div{padding-left:16px;border-left:1px solid var(--line-2)}
-.scale .n{display:block;font-size:30px;font-weight:700;color:var(--text);letter-spacing:-.01em}
-.scale .t{display:block;margin-top:6px;font-size:12px;line-height:1.55;color:var(--muted)}
-.ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:30px 0 0}
-.way{display:block;color:inherit;text-decoration:none;border:1px solid var(--line-2);border-radius:4px;
-  padding:20px 20px 22px;background:var(--panel)}
-.way:hover{border-color:var(--text)}
-.way .h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
-  font-size:16px;font-weight:700;color:var(--text)}
-.way .h span{color:var(--muted);font-weight:500}
-.way:hover .h span{color:var(--text)}
-.way p{margin:10px 0 0;font-size:12.5px;line-height:1.65;color:var(--sec)}
 
 /* about: long-form reading with a table of contents beside it */
 .doc{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;margin-top:8px}
@@ -95,13 +79,7 @@ footer .by{margin-top:8px}
   .toc>ol{display:flex;flex-wrap:wrap;gap:8px 22px}
   .toc>ol>li{margin:0}
 }
-@media(max-width:760px){
-  .ways{grid-template-columns:1fr}
-}
 @media(max-width:620px){
   .mast{flex-wrap:wrap}
-  .scale{grid-template-columns:1fr}
-  .scale div+div{padding-left:0;border-left:0;border-top:1px solid var(--line-2)}
-  .scale div{padding:14px 0 6px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}

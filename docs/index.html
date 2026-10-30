@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FPM · Fair Plus-Minus</title>
+<title>FPM - Fair Plus-Minus</title>
 <meta name="description" content="Fair Plus-Minus: a EuroLeague player impact metric, with a leaderboard for every season since 2007-08.">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap">
@@ -23,47 +23,32 @@
     </nav>
   </header>
 
-  <p class="lede">Fair Plus-Minus is a player impact metric built for the EuroLeague. It estimates how
-    much a player helps his team outscore the opponent per 100 possessions, once you account for the
-    teammates next to him and the players he is up against.</p>
-  <p class="lede">It starts from the box score, checks it against what the scoreboard actually did with him
-    on the floor, and grades every shot by how good it was rather than whether it went in. Each season is
-    judged against its own league, all the way back to 2007&#8209;08, and the number is split into an
-    <b>offensive</b> and a <b>defensive</b> half.</p>
+  <p class="lede">Fair Plus-Minus, or FPM, is a player impact metric for the EuroLeague. It's built around
+    a basic question: when a player is on the floor, does his team outscore the other one, and how much
+    of that is actually down to him?</p>
+  <p class="lede">PIR, the league's official number, doesn't really answer that. It adds up the good
+    things, takes away the bad ones, and never asks who else was on the court or whether the team won
+    those minutes. FPM starts from the box score as well, but it checks it against the scoreboard, pulls
+    a player apart from his teammates and opponents, and judges shots by how good they were rather than
+    by whether they went in.</p>
+  <p class="lede">The number is points per 100 possessions compared to an average player. Zero is
+    average, +3 or so gets you into a season's top 20, and the very best end up around +6 or +7. Every
+    season since 2007&#8209;08 is on the <a href="leaderboard/">leaderboard</a>, and the current one
+    keeps updating as the games are played.</p>
+  <p class="lede">If you want to know how it works, or where it gets things wrong, it's all on the
+    <a href="about/">about page</a>. The data and the code that collects it are on
+    <a href="https://github.com/filippospol/FPM" target="_blank" rel="noopener">GitHub</a>, free for
+    anyone to use.</p>
   <div class="credit">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></div>
   <div class="rule"></div>
 
-  <div class="scale" aria-label="Reading the number">
-    <div><span class="n">0</span><span class="t">An average rotation player.</span></div>
-    <div><span class="n">+3</span><span class="t">Roughly where a season's top 20 starts.</span></div>
-    <div><span class="n">+6 to +7</span><span class="t">The best players in the league.</span></div>
-  </div>
-
-  <div class="ways">
-    <a class="way" href="leaderboard/">
-      <div class="h">Leaderboard <span>&rarr;</span></div>
-      <p>Every player and every season since 2007&#8209;08. Sort by the total, offense or defense, filter by
-        team, or look someone up by name.</p>
-    </a>
-    <a class="way" href="about/">
-      <div class="h">About <span>&rarr;</span></div>
-      <p>How it works in plain words, the full design notes with every source, and the places where it
-        still gets things wrong.</p>
-    </a>
-    <a class="way" href="https://github.com/filippospol/FPM" target="_blank" rel="noopener">
-      <div class="h">Repository <span>&nearr;</span></div>
-      <p>The data, the scrapers and the documentation on GitHub. The data is open, so feel free to build
-        on it.</p>
-    </a>
-  </div>
-
   <footer>
-    <span id="updated">Updated through the season, round by round.</span>
+    <span id="updated">The leaderboard updates through the season.</span>
     <div class="by">Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a>.</div>
   </footer>
 </div>
 <script>
-/* show when the board was last refreshed; quietly keep the default line if the file can't be read */
+/* show when the leaderboard was last refreshed; keep the default line if the file can't be read */
 (function(){
   function grab(){
     return fetch('leaderboard/fpm.json').then(function(r){if(!r.ok)throw 0;return r.json();})
@@ -72,9 +57,7 @@
   grab().then(function(m){
     var d=new Date(m.generated);if(isNaN(d))return;
     var mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var lab='';(m.seasons||[]).forEach(function(s){if(s.code===m.current)lab=s.label;});
-    document.getElementById('updated').textContent='Last updated '+d.getUTCDate()+' '+mon[d.getUTCMonth()]+' '+
-      d.getUTCFullYear()+(lab?' · latest season '+lab:'')+'.';
+    document.getElementById('updated').textContent='Leaderboard last updated on '+d.getUTCDate()+' '+mon[d.getUTCMonth()]+' '+d.getUTCFullYear()+'.';
   }).catch(function(){});
 })();
 </script>
