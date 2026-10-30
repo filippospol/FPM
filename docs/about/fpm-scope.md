@@ -1,4 +1,4 @@
-# Scope of this repository
+# Scope of this project
 
 This is the home of FPM, a EuroLeague player impact metric. The aim here is to be open about how the
 metric works while keeping the finished model itself private.
