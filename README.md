@@ -27,5 +27,5 @@ the blend is both stable and honest. The settings are chosen by how well they pr
 
 FPM is in **points per 100 possessions** relative to an average rotation player (0 is average). The
 scale is set by the data: one point of FPM is worth about one point per 100 possessions of a lineup's
-margin in the following season. A season runs from roughly −6 to +7; about +3 or better is a top-20
+margin in the following season. A season runs from roughly −6 to +8; about +2.5 or better is a top-20 
 player, and the best reach +6 to +7.
