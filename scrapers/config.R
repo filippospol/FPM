@@ -71,6 +71,7 @@ pbp_path = function(scode) file.path(DATA_DIR, paste0("pbp_", scode, ".csv"))
 pbp_zip_path = function(scode) file.path(DATA_DIR, paste0("pbp_", scode, ".zip"))
 shots_path = function(scode) file.path(DATA_DIR, paste0("shots_", scode, ".csv"))
 people_path  = function(scode) file.path(DATA_DIR, paste0("people_", scode, ".csv"))
+sched_path   = function(scode) file.path(DATA_DIR, paste0("schedule_", scode, ".csv"))   # every game of the season, played or not
 
 # per-season RDS bundle (the committed output of merge_to_rds.R / scrape_incremental.R)
 season_rds_path = function(scode) file.path(RDS_DIR, paste0("el_", scode, ".rds"))

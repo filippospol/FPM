@@ -55,7 +55,9 @@ source("scrapers/config.R")
   as.data.frame(do.call(rbind, lapply(refs, one)), stringsAsFactors = FALSE)
 }
 
-get_fixtures = function(season, scode) {
+# One request for the season's games feed, flattened, every game whatever its status.
+# get_fixtures() keeps the finished ones; scrape_schedule.R keeps them all.
+fetch_games_feed = function(scode) {
   url = glue(EP_FIXTURES, COMP = COMP, scode = scode)
   res = GET(url, query = list(limit = 600))          # 600 > any season's game count
   stop_for_status(res)
@@ -79,8 +81,11 @@ get_fixtures = function(season, scode) {
   flat$VENUE_ADDRESS  = to_latin(gsub("\\s*<br\\s*/?>\\s*", ", ", as.character(.pick_col(flat, "VENUE_ADDRESS"))))
   flat$AUDIENCE       = suppressWarnings(as.integer(.pick_col(flat, "AUDIENCE")))
   flat$AUDIENCE_CONFIRMED = as.logical(.pick_col(flat, "AUDIENCE_CONFIRMED"))
+  flat
+}
 
-  flat %>%
+get_fixtures = function(season, scode) {
+  fetch_games_feed(scode) %>%
     filter(STATUS == "result") %>%                    # finished games only
     mutate(SEASON = season, SEASON_CODE = scode, LEAGUE = LEAGUE,
            GAME_DATE  = as.Date(substr(DATE, 1, 10)),

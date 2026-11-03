@@ -7,7 +7,8 @@
 #   2. refreshes that season's fixtures (one request) to see finished games,
 #   3. fetches ONLY the games not already stored (box + team box + coaches + pbp
 #      + shots), reusing the per-game fetchers from the scrapers,
-#   4. refreshes the people roster,
+#   4. refreshes the people roster and the full season schedule (played and
+#      still to play, for strength-of-schedule and simulation work),
 #   5. merges everything back and rewrites data/el_<scode>.rds.
 #
 # The per-season file holds exactly one season, so fixtures/people are replaced
@@ -23,6 +24,7 @@ source("scrapers/scrape_fixtures.R")   # scrape_fixtures()
 source("scrapers/scrape_boxscores.R")  # get_boxscore(), finalize_team_box(), .apply_canon_names()
 source("scrapers/scrape_shots.R")      # get_shots(), SHOT_COLS
 source("scrapers/scrape_people.R")     # scrape_people()
+source("scrapers/scrape_schedule.R")   # scrape_schedule()
 source("scrapers/scrape_pbp.R")        # get_pbp()
 source("scrapers/merge_to_rds.R")      # append/replace helpers + season_rds_path
 suppressMessages(library(dplyr))
@@ -83,11 +85,15 @@ scrape_incremental = function(scode = NULL) {
     el$shots          = append_rows(drop_fixtures(el$shots,          new_fids), shots)
   }
 
-  # 4) fixtures + people are one-season & cheap: replace them wholesale
+  # 4) fixtures, people and the schedule are one-season & cheap: replace them wholesale
   el$fixtures = fx
   scrape_people(scode)
   ppl = read.csv(people_path(scode), stringsAsFactors = FALSE)
   if (nrow(ppl)) el$people = ppl
+  # the full season schedule (played and still to play), only for the season in progress;
+  # the historical bundles do not carry it. A feed hiccup keeps the previous copy.
+  sch = tryCatch(scrape_schedule(scode), error = function(e) { message("  schedule: ", conditionMessage(e)); NULL })
+  if (!is.null(sch) && nrow(sch)) el$schedule = sch
 
   # 5) save the bundle
   el = el[!vapply(el, is.null, logical(1))]

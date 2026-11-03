@@ -5,6 +5,7 @@
 # bundle per season to RDS_DIR (data/el_<scode>.rds), each a list:
 #
 #   el_E2026.rds  =  list(fixtures, boxscores, team_boxscores, coaches, shots, people, pbp)
+#                    (+ schedule for the season in progress: every game, played or not)
 #
 # One file per season (not one giant blob): the incremental run only rewrites
 # el_E2026.rds, git diffs stay small, and a single year loads without the history.
@@ -29,7 +30,8 @@ suppressMessages(library(dplyr))
   team_boxscores = team_box_path,
   coaches        = coach_path,
   shots          = shots_path,
-  people         = people_path
+  people         = people_path,
+  schedule       = sched_path     # only present for the season in progress
 )
 
 # ---- shared helpers (also used by scrape_incremental.R) ---------------------
