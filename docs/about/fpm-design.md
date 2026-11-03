@@ -33,7 +33,8 @@ RAPM-EU, German Basketball Analytics' xEuPM, Clutch Data's possession-weighted R
 papers warning that EuroLeague lineup synergies run larger than the NBA's, which makes individual effects
 harder to pin down here. So the prior is era-neutral, position-aware, and padded toward role baselines
 for thin samples. Era-neutral means every player is judged against his own season, since the three-point
-line moved out and the format of the competition changed more than once over the years.
+line moved out in 2010 (Štrumbelj and colleagues measured what that did to shooting and pace) and the
+format of the competition changed more than once over the years.
 
 Luck handling is the one place the design changed after testing, and it is worth dwelling on. A
 standard RAPM regresses the actual point margin of each possession, so made shots help and missed shots
@@ -192,12 +193,28 @@ history, parallel work, and ideas that did not end up in the model.
 ### Data sources and parallel public work
 
 - **EuroLeague feeds.** The data endpoints (boxscore, play-by-play, shots, bio).
-- **egemeny13, `euroleague-analytics`.** A parallel play-by-play warehouse; a possession cross-check. https://github.com/egemeny13/euroleague-analytics
+- **egemeny13, `euroleague-analytics`.** A parallel play-by-play warehouse with possessions counted event by event, five-man lineup stats, on/off splits and shot coordinates for the latest seasons, with an archive being backfilled; the one independent check on the stints here. https://github.com/egemeny13/euroleague-analytics
+- **Other ways to get this data.** The Python and R packages that wrap the same feeds are listed in the data folder's readme.
 
 *Further reading:*
 
 - **Walker, N. (OpenRAPM).** Open NBA RAPM, 1996-97 to now: plain RAPM, a box prior, an out-of-sample shrink, every change judged on games it never saw. The validation-first philosophy, in public. https://github.com/bbstats/openrapm
 - **HackaStat.** Public Euro advanced stats (its BPM uses NBA coefficients). https://hackastat.eu/en/home-page-eng/
+
+### The league itself: rules, home court, runs and what wins
+
+Work on the EuroLeague rather than on player value. Each touches a choice made here: the era split, the
+home-court term, the garbage-time rule, or how team results are read.
+
+- **Štrumbelj, E., Vračar, P., Robnik-Šikonja, M., Dežman, B. & Erčulj, F. (2013).** *A Decade of Euroleague Basketball: an Analysis of Trends and Recent Rule Change Effects.* Journal of Human Kinetics. The measured effect of the 2010 rule changes, the three-point line out to 6.75 m among them, on shooting and pace; the basis for judging each season on its own curve. https://pmc.ncbi.nlm.nih.gov/articles/PMC3827757
+- **Foteinakis, P. F. et al. (2026).** *Home advantage in EuroLeague basketball: quantifying the interactions between team quality, competitive balance, and season dynamics.* Journal of Human Sport and Exercise. 2,154 games from 2016 to 2025: home teams win 62.9%, and the edge is larger for weaker teams. The regression here carries one home-court term for every team; a quality-dependent one is untested. https://www.jhse.es/index.php/jhse/article/view/quantifying-euroleague-home-advantage
+- **Carta, G., Favero, C. A. & Maver, A. (2026).** *Do timeouts matter? A study of Euroleague basketball.* Journal of Sports Analytics. Difference-in-differences on 2021-2024 play-by-play: a timeout contains a run but does not reverse it. A reason to leave momentum out of the model. https://journals.sagepub.com/doi/10.1177/22150218261434693
+- **Kamitsis, A. & Politis, K. (2025).** *Performance indicators for qualification to the playoffs and the Final Four in Euroleague 2000-2022.* Journal of Sports Analytics. Points per possession and defensive rebounding separate playoff teams, pace runs against success, and depth matters more than a top scorer. https://journals.sagepub.com/doi/10.1177/22150218251365222
+
+*Further reading:*
+
+- **Giasemidis, G. (2020).** *Descriptive and Predictive Analysis of Euroleague Basketball Games and the Wisdom of Basketball Crowds.* Three seasons of the current format: off-the-shelf models top out at 67% on predicting the winner, and a crowd of fans beat them. The benchmark for any game-prediction layer. https://arxiv.org/abs/2002.08465
+- **(2022).** *Home-audience advantage in basketball: evidence from a natural experiment in EuroLeague games during the 2019-2021 Covid-19 era.* The crowd's share of the home advantage, from the empty-arena seasons. https://www.researchgate.net/publication/362156724
 
 ## Limitations
 
@@ -251,6 +268,10 @@ nothing earlier to learn from.
 
 **Data quality degrades in the early seasons.** Shot detail, coach fields and some box lines are less
 clean before roughly 2015-16, so a few features are weaker in those early years.
+
+**Home court is one number.** The regression controls for home court with a single term shared by every
+team. Foteinakis and colleagues find the EuroLeague home edge is larger for weaker teams, so a term that
+varies with team strength might fit better; it has not been tested here.
 
 **Luck is damped, not removed.** The regression counts the real score, so a hot or cold shooting run
 does reach a single-season rating; the box-score anchor and the offensive shrink soften it rather than
