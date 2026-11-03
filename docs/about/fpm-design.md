@@ -92,10 +92,11 @@ sooner keep thin data than throw it away.
 
 ## Bibliography
 
-Grouped by family, with a brief note on each. Links were valid at compile time. In each
-group, the entries listed first contributed something that is in FPM, a method, a target,
-a parameter, or a decision that was tested. Everything under *Further reading* is context:
-history, parallel work, and ideas that did not end up in the model.
+Grouped by family, with a brief note on each. Links were valid at compile time. Every entry here
+contributed something to FPM: a method, a target, a parameter, a decision that was tested, or a claim
+made in these notes. Work that points at what could be built next rather than at what is built is in
+the [future work](https://github.com/filippospol/FPM/blob/main/docs/about/fpm-future-work.md) file,
+next to the project it belongs to. A short list of surveys closes the section.
 
 ### RAPM and adjusted plus-minus (foundations)
 
@@ -103,16 +104,6 @@ history, parallel work, and ideas that did not end up in the model.
 - **Sill, J. (2010).** *Improved NBA Adjusted +/− Using Regularization.* MIT Sloan. The founding ridge-RAPM paper. https://supermariogiacomazzo.github.io/STOR538_WEBSITE/Articles/Basketball/Basketball_Sill.pdf
 - **Macdonald, B. (2012).** *Adjusted Plus-Minus using Ridge Regression.* Ridge APM with a custom response; the template for the expected-points version that was tried and dropped. https://arxiv.org/abs/1201.0317
 - **Jacobs, J. (Squared Statistics).** *Exercising Error under RAPM.* RAPM standard errors. https://squared2020.com/2019/10/03/exercising-error-quantifying-statistical-tests-under-rapm-part-iv/
-
-*Further reading:*
-
-- **Fearnhead, P. & Taylor, B. (2011).** *On Estimating the Ability of NBA Players.* Bayesian APM with abilities that evolve season to season; the academic ancestor of the recency filter. https://arxiv.org/abs/1008.0705
-- **Deshpande, S. & Jensen, S. (2016).** *Estimating a Player's Impact on Winning.* Win probability as the response. https://arxiv.org/abs/1604.03186
-- **Franks, A., D'Amour, A., Cervone, D. & Bornn, L. (2016).** *Meta-analytics: tools for understanding the statistical properties of sports metrics.* Discrimination, stability and independence as the tests of a metric; the formal version of judging by retrodiction. https://arxiv.org/abs/1609.09830
-- **Engelmann, J. (2017).** *Possession-based player performance analysis in basketball.* In the Handbook of Statistical Methods and Analyses in Sports (Chapman & Hall/CRC). The canonical RAPM method chapter, by the author of RPM. https://www.routledge.com/products/9780367331016
-- **Hvattum, L. M. (2019).** *A comprehensive review of plus-minus ratings.* The literature map. https://www.researchgate.net/publication/335324879
-- **Terner, Z. & Franks, A. (2021).** *Modeling Player and Team Performance.* A box / APM / tracking survey. https://arxiv.org/abs/2007.10550
-- **Berry, G. (2026).** *Finding Empty Stats and Quiet Contributors with RAPM.* RAPM, with a focal-player variant, run against box stats to separate production that helps the team from "empty stats" that don't move team totals, and to surface quiet contributors the box score misses. https://georgeberry.substack.com/p/finding-empty-stats-and-quiet-contributors
 
 ### All-in-one metrics and box priors (the architecture FPM mirrors)
 
@@ -124,10 +115,6 @@ history, parallel work, and ideas that did not end up in the model.
 - **Medvedovsky, K. & Patton, A. (DARKO).** A daily-updating talent model with aging built in. https://kmedved.com/
 - **LUMA (court-share).** A possession-level, shot-aware model; the reference for the expected-points version that was tried and dropped. https://court-share.com/luma
 
-*Further reading:*
-
-- **Gelade, G. & Hvattum, L. M. (2020).** *On the relationship between +/- ratings and event-level performance statistics.* Plus-minus and box-score metrics tested head to head; each captures value the other misses, the case for blending them. https://doi.org/10.3233/JSA-200432
-
 ### Prior, stabilization, luck and aging
 
 - **Engelmann, J.** *xRAPM / RPM.* Aging-to-peak and opponent-luck ideas. https://jeremiasengelmann.substack.com/
@@ -136,44 +123,24 @@ history, parallel work, and ideas that did not end up in the model.
 - **James, B.** *The "safe lead" rule.* The logic behind a time-scaled garbage-time threshold, recalibrated here from EuroLeague comeback rates.
 - **Cleaning the Glass (B. Falk).** *Garbage time.* The NBA removal rule the team stats adapt; the EuroLeague version drops the bench condition and lowers the margins to fit a lower-scoring league. https://cleaningtheglass.com/stats/guide/garbage_time
 
-*Further reading:*
-
-- **Matano, F., Richardson, L. & Pospisil, T. (2018).** *Augmenting Adjusted Plus-Minus in Soccer with FIFA Ratings.* An outside rating entered as the ridge prior mean; the same prior-as-offset architecture, proven in another sport. https://arxiv.org/abs/1810.08032
-- **"Dummy RAPM" (2026).** *Representing Low-Minute Players in Regularized Adjusted Plus-Minus.* A formal treatment of the low-minute problem the padding handles. https://arxiv.org/abs/2608.19454
-- **Vaci, N., Cocić, D., Gula, B. & Bilalić, M. (2019).** *Large data and Bayesian modeling: aging curves of NBA players.* Large-sample aging curves with a peak in the mid to late twenties; a check on the quadratic peaking at 27. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6690864/
-
 ### EuroLeague and European RAPM / impact (closest prior art)
 
 - **Olivo, F. (2024).** *Advanced Basketball Analytics* (MSc thesis, Bologna). Elastic-net RAPM on these seasons; the closest template. https://amslaurea.unibo.it/id/eprint/30803/1/olivo_thesis.pdf
 - **Grassetti, L. et al. (2020; 2026).** *Extended RAPM / ME-RAPM.* EuroLeague lineup synergy is large. https://air.uniud.it/retrieve/e960ecb3-0eae-49e9-a4c9-b8f48a93ad73/10.1515_jqas-2024-0138.pdf
-
-*Further reading:*
-
 - **Dewandeler, K. (2025).** *Introducing RAPM-EU.* A full-stack Euro RAPM write-up. https://kevindewandeler.substack.com/p/introducing-rapm-eu
 - **German Basketball Analytics (2026).** *xEuPM* and *Best players in Europe.* Box prior on Euro RAPM; career ratings. https://germanbasketballanalytics.substack.com/p/a-forward-looking-metric-for-european
 - **Clutch Data (2025).** *Measuring Player Impact.* A 3-year Euro RAPM with an O/D split. https://clutchdata.substack.com/p/off-season-insights-measuring-player
-- **Petridis, C. & Pelechrinis, K. (2026).** *Lineup RAPM (L-RAPM).* Informed priors for small samples. https://arxiv.org/abs/2601.15000
 
 ### EuroLeague box ratings, PIR critique and possessions
 
 - **Carta, G. & Favero, C. A. (2026).** *WINSCORE revisited.* NBA weights don't transfer; fit native. https://iris.unibocconi.it/retrieve/caa8b1e5-4f3d-43cb-8b6d-79868be8818e/carta-favero-2026-winscore-revisited.pdf
 - **Charamis, E. et al. (2023).** *Estimating team possessions.* The EuroLeague possession formula. https://journals.sagepub.com/doi/10.1177/17479541211070788
 
-*Further reading:*
-
-- **Marmarinos, C. (2019).** *A new player-evaluation index.* An index that beats PIR. https://pergamos.lib.uoa.gr/uoa/dl/object/2933718/file.pdf
-- **Martínez, J. A. (2024).** *"Valoración ACB."* PIR-style weights are unjustified.
-- **Damoulaki, A. et al. (2024).** *Lasso Multinomial Performance Indicators.* Curbs low-minute inflation. https://arxiv.org/abs/2406.09895
-
-### Shot quality / expected points
+### Shot quality and expected points (the target that was tested and dropped)
 
 - **"Predictive Analysis of Successful Basketball Shots: The EuroLeague Case."** The expected-FG basis. https://www.researchgate.net/publication/327703497
-
-*Further reading:*
-
-- **Cervone, D., D'Amour, A., Bornn, L. & Goldsberry, K. (2014).** *POINTWISE: Predicting Points and Valuing Decisions in Real Time.* Expected possession value; grading the process rather than the outcome, in its fullest tracking form. https://arxiv.org/abs/1408.0777
+- **"Expected Points Above Average" (2025).** A Bayesian hierarchical shot model that pools each shooter's skill instead of using league rates; the idea behind the shooter-specific version that was also tested and lost. https://arxiv.org/abs/2405.10453
 - **"Biases in Expected Goals Models Confound Finishing Ability" (2024).** Context-free expected values absorb part of real shooting skill, so good shooters can read as lucky. This is exactly how the expected-points target failed here. https://arxiv.org/abs/2401.09940
-- **Scott, Gee et al. (2025).** *Shot charts estimation.* Spatial shot-chart modeling. https://link.springer.com/article/10.1007/s00180-025-01599-1
 
 ### Box-score frameworks, possessions, roles
 
@@ -181,40 +148,31 @@ history, parallel work, and ideas that did not end up in the model.
 - **Kubatko, J. et al. (2007).** *Analyzing Basketball Statistics.* Per-100 and pace conventions. https://doi.org/10.2202/1559-0410.1070
 - **BBall Index.** *Player roles.* The role taxonomy. https://www.bball-index.com/about/about-the-data/
 
-### Extensions considered (backlog)
+### Validation and openness
 
-*Further reading:*
+- **Walker, N. (OpenRAPM).** Open NBA RAPM, 1996-97 to now: plain RAPM, a box prior, an out-of-sample shrink, every change judged on games it never saw. The validation-first approach this project follows. https://github.com/bbstats/openrapm
+- **Franks, A., D'Amour, A., Cervone, D. & Bornn, L. (2016).** *Meta-analytics: tools for understanding the statistical properties of sports metrics.* Discrimination, stability and independence as the tests of a metric; the formal version of the next-season and split-half tests in the engine. https://arxiv.org/abs/1609.09830
 
-- **"Expected Points Above Average" (2025).** A Bayesian hierarchical shot model that pools each shooter's skill instead of using league rates. https://arxiv.org/abs/2405.10453
-- **Bacco, L. et al. (2024).** *Causality-inspired APM.* Handles the roster/coach confound. https://proceedings.mlr.press/v236/bacco24a/bacco24a.pdf
-- **"Hypergraph Adjusted Plus-Minus" (2024).** Players and lineups in one ridge. https://arxiv.org/abs/2403.20214
-- **"Nuthin' but a G League" (2026).** A cross-league translation method. https://sponet.de/sponet/Record/4097219
-
-### Data sources and parallel public work
-
-- **EuroLeague feeds.** The data endpoints (boxscore, play-by-play, shots, bio).
-- **egemeny13, `euroleague-analytics`.** A parallel play-by-play warehouse with possessions counted event by event, five-man lineup stats, on/off splits and shot coordinates for the latest seasons, with an archive being backfilled; the one independent check on the stints here. https://github.com/egemeny13/euroleague-analytics
-- **Other ways to get this data.** The Python and R packages that wrap the same feeds are listed in the data folder's readme.
-
-*Further reading:*
-
-- **Walker, N. (OpenRAPM).** Open NBA RAPM, 1996-97 to now: plain RAPM, a box prior, an out-of-sample shrink, every change judged on games it never saw. The validation-first philosophy, in public. https://github.com/bbstats/openrapm
-- **HackaStat.** Public Euro advanced stats (its BPM uses NBA coefficients). https://hackastat.eu/en/home-page-eng/
-
-### The league itself: rules, home court, runs and what wins
-
-Work on the EuroLeague rather than on player value. Each touches a choice made here: the era split, the
-home-court term, the garbage-time rule, or how team results are read.
+### The league itself
 
 - **Štrumbelj, E., Vračar, P., Robnik-Šikonja, M., Dežman, B. & Erčulj, F. (2013).** *A Decade of Euroleague Basketball: an Analysis of Trends and Recent Rule Change Effects.* Journal of Human Kinetics. The measured effect of the 2010 rule changes, the three-point line out to 6.75 m among them, on shooting and pace; the basis for judging each season on its own curve. https://pmc.ncbi.nlm.nih.gov/articles/PMC3827757
 - **Foteinakis, P. F. et al. (2026).** *Home advantage in EuroLeague basketball: quantifying the interactions between team quality, competitive balance, and season dynamics.* Journal of Human Sport and Exercise. 2,154 games from 2016 to 2025: home teams win 62.9%, and the edge is larger for weaker teams. The regression here carries one home-court term for every team; a quality-dependent one is untested. https://www.jhse.es/index.php/jhse/article/view/quantifying-euroleague-home-advantage
-- **Carta, G., Favero, C. A. & Maver, A. (2026).** *Do timeouts matter? A study of Euroleague basketball.* Journal of Sports Analytics. Difference-in-differences on 2021-2024 play-by-play: a timeout contains a run but does not reverse it. A reason to leave momentum out of the model. https://journals.sagepub.com/doi/10.1177/22150218261434693
-- **Kamitsis, A. & Politis, K. (2025).** *Performance indicators for qualification to the playoffs and the Final Four in Euroleague 2000-2022.* Journal of Sports Analytics. Points per possession and defensive rebounding separate playoff teams, pace runs against success, and depth matters more than a top scorer. https://journals.sagepub.com/doi/10.1177/22150218251365222
 
-*Further reading:*
+### Data sources and parallel public work
 
-- **Giasemidis, G. (2020).** *Descriptive and Predictive Analysis of Euroleague Basketball Games and the Wisdom of Basketball Crowds.* Three seasons of the current format: off-the-shelf models top out at 67% on predicting the winner, and a crowd of fans beat them. The benchmark for any game-prediction layer. https://arxiv.org/abs/2002.08465
-- **(2022).** *Home-audience advantage in basketball: evidence from a natural experiment in EuroLeague games during the 2019-2021 Covid-19 era.* The crowd's share of the home advantage, from the empty-arena seasons. https://www.researchgate.net/publication/362156724
+- **EuroLeague feeds.** The data endpoints (boxscore, play-by-play, shots, bio, schedule).
+- **egemeny13, `euroleague-analytics`.** A parallel play-by-play warehouse with possessions counted event by event, five-man lineup stats, on/off splits and shot coordinates for the latest seasons, with an archive being backfilled; the one independent check on the stints here. https://github.com/egemeny13/euroleague-analytics
+- **Other ways to get this data.** The Python and R packages that wrap the same feeds are listed in the data folder's readme.
+
+### Background
+
+Surveys and reviews that shaped the thinking without supplying a specific piece of the model.
+
+- **Engelmann, J. (2017).** *Possession-based player performance analysis in basketball.* In the Handbook of Statistical Methods and Analyses in Sports (Chapman & Hall/CRC). The canonical RAPM method chapter, by the author of RPM. https://www.routledge.com/products/9780367331016
+- **Hvattum, L. M. (2019).** *A comprehensive review of plus-minus ratings.* The literature map. https://www.researchgate.net/publication/335324879
+- **Terner, Z. & Franks, A. (2021).** *Modeling Player and Team Performance.* A box / APM / tracking survey. https://arxiv.org/abs/2007.10550
+- **Gelade, G. & Hvattum, L. M. (2020).** *On the relationship between +/- ratings and event-level performance statistics.* Plus-minus and box-score metrics tested head to head; each captures value the other misses, the case for blending them. https://doi.org/10.3233/JSA-200432
+- **Matano, F., Richardson, L. & Pospisil, T. (2018).** *Augmenting Adjusted Plus-Minus in Soccer with FIFA Ratings.* An outside rating entered as the ridge prior mean; the same prior-as-offset architecture, proven in another sport. https://arxiv.org/abs/1810.08032
 
 ## Limitations
 
