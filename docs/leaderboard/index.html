@@ -54,6 +54,15 @@ td.fpm{width:80px;padding:6px}
 .fpm .pc{display:block;font:400 9.5px var(--f-mono);color:var(--chip-sub);margin-top:3px}
 td .up{color:var(--pos-text)}
 td .dn{color:var(--neg-text)}
+/* the note on the +- header: shows on hover, on a tap, or on keyboard focus */
+.tip{position:relative;display:inline-block;border-bottom:1px dotted var(--muted);cursor:help;outline:none}
+.tip-box{display:none;position:absolute;right:-8px;top:calc(100% + 10px);z-index:30;width:280px;padding:12px 14px;
+  font:400 12.5px/1.55 var(--f-sans);letter-spacing:0;text-transform:none;text-align:left;white-space:normal;
+  color:var(--sec);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);cursor:default}
+.tip-box b{color:var(--text);font-weight:600}
+.tip-box::before{content:"";position:absolute;right:12px;top:-6px;width:10px;height:10px;background:var(--panel);
+  border-left:1px solid var(--line);border-top:1px solid var(--line);transform:rotate(45deg)}
+.tip:hover .tip-box,.tip:focus .tip-box,.tip:focus-within .tip-box{display:block}
 .se-col{display:none}
 table.show-se .se-col{display:table-cell}
 .empty{display:none;padding:44px 4px;color:var(--muted);font-size:13px}
@@ -92,8 +101,7 @@ table.show-se .se-col{display:table-cell}
 
   <p class="lede">A EuroLeague player's on-court impact, in points per 100 possessions above an
     average player, split into <b>offense</b> and <b>defense</b>. It counts the real score and checks
-    it against the box score. Zero is average; about +2.5 or better is a top-20 player, and the best 
-    reach +6 to +7</p>
+    it against the box score. Zero is average; around +2.5 is top-20 territory, and the best get to +6 or +7.</p>
   <div class="rule"></div>
 
   <div class="controls">
@@ -121,7 +129,10 @@ table.show-se .se-col{display:table-cell}
         <th class="c-min" data-k="5">Min</th>
         <th class="c-poss" data-k="6">Poss</th>
         <th class="on" data-k="7">FPM<span class="ar">&#9660;</span></th>
-        <th class="se-col c-se" data-k="10">&plusmn;</th>
+        <th class="se-col c-se" data-k="10"><span class="tip" tabindex="0">&plusmn;<span class="tip-box" role="tooltip">
+          <b>Margin of error.</b> The rating could reasonably sit about this far above or below the number shown.
+          It shrinks as a player's possessions add up, so it is widest early in the season and for
+          players with few minutes. Shown for the current season only, where samples are still small.</span></span></th>
         <th class="c-o" data-k="8">O-FPM</th>
         <th class="c-d" data-k="9">D-FPM</th>
       </tr></thead>
@@ -226,7 +237,8 @@ function boot(){
 $('season').addEventListener('change',function(){state.season=this.value;fillTeams();render();});
 $('team').addEventListener('change',function(){state.team=this.value;render();});
 $('q').addEventListener('input',function(){state.q=this.value;render();});
-document.querySelectorAll('thead th').forEach(function(el){el.addEventListener('click',function(){
+document.querySelectorAll('thead th').forEach(function(el){el.addEventListener('click',function(ev){
+  if(ev.target.closest&&ev.target.closest('.tip-box'))return;   /* reading the note is not a sort */
   var k=el.getAttribute('data-k');
   if(!k)return;   /* the # column is not sortable */
   if(state.k===k)state.dir*=-1;else{state.k=k;state.dir=(k==="0"||k==="1"||k==="2"||k==="12")?1:-1;}
