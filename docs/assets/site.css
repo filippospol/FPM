@@ -9,8 +9,8 @@
   --bg:#f2eee5; --panel:#f8f5ee; --raise:#e7e1d4; --hover:#ebe6da;
   --text:#1b1a16; --sec:#3d3a33; --muted:#6f6a60; --faint:#9b958a;
   --line:#1b1a16; --rule:#c6bfae; --line-2:#dcd6c8;
-  --pos:52,128,214; --neg:222,98,18;            /* heatmap pair */
-  --pos-text:#1f63b8; --neg-text:#c2530f;        /* the same pair as text, tuned for paper */
+  --pos:17,138,112; --neg:141,78,168;           /* heatmap pair (teal / purple) */
+  --pos-text:#0e7a5f; --neg-text:#7d3f9e;        /* the same pair as text, tuned for paper */
   --chip-text:#15140f; --chip-sub:rgba(0,0,0,.55);
   --r:4px;
   --f-serif:'Instrument Serif',Georgia,'Times New Roman',serif;
@@ -25,14 +25,14 @@
   --bg:#141311; --panel:#1a1916; --raise:#262420; --hover:#1f1d19;
   --text:#ece7da; --sec:#c5bfb0; --muted:#8a8478; --faint:#625d53;
   --line:#ece7da; --rule:#4a453c; --line-2:#2a2823;
-  --pos-text:#6ea8e8; --neg-text:#f08a46;
+  --pos-text:#4cbf9f; --neg-text:#bd93d8;
   --chip-text:#ffffff; --chip-sub:rgba(255,255,255,.62);
   color-scheme:dark; } }
 :root[data-theme="dark"]{
   --bg:#141311; --panel:#1a1916; --raise:#262420; --hover:#1f1d19;
   --text:#ece7da; --sec:#c5bfb0; --muted:#8a8478; --faint:#625d53;
   --line:#ece7da; --rule:#4a453c; --line-2:#2a2823;
-  --pos-text:#6ea8e8; --neg-text:#f08a46;
+  --pos-text:#4cbf9f; --neg-text:#bd93d8;
   --chip-text:#ffffff; --chip-sub:rgba(255,255,255,.62);
   color-scheme:dark; }
 
