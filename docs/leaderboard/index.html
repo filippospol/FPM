@@ -46,6 +46,8 @@ tbody tr:hover td{background:var(--hover)}
 .rankh:hover{color:var(--muted)}
 .rank{color:var(--faint)}
 .player{font:500 15px var(--f-sans);color:var(--text)}
+.player a{color:inherit;text-decoration:none;border-bottom:1px solid transparent}
+.player a:hover{border-bottom-color:var(--text)}
 .team,.pos,.role{font:400 13.5px var(--f-sans);color:var(--muted)}
 /* FPM: a chip coloured by how far above or below average */
 td.fpm{width:80px;padding:6px}
@@ -89,6 +91,7 @@ table.show-se .se-col{display:table-cell}
     <nav class="nav" aria-label="Site">
       <a href="../">Home</a>
       <a href="./" aria-current="page">Leaderboard</a>
+      <a href="../player/">Players</a>
       <a href="../about/">About</a>
       <button class="theme" id="theme" type="button" aria-label="Switch between light and dark"><span class="on-light">Dark</span><span class="on-dark">Light</span></button>
     </nav>
@@ -155,6 +158,8 @@ var state={season:"",team:"",q:"",k:"7",dir:-1};
 var NUM={3:1,4:1,5:1,6:1,7:1,8:1,9:1,10:1,11:1};
 
 function sgn(v){v=+v;return (v>=0?'+':'')+v.toFixed(1);}
+/* a URL-safe key for the player page: the EuroLeague code when present, else the name */
+function keyOf(a){return a.length>13&&a[13]?('id:'+a[13]):('nm:'+a[0]);}
 /* colour-blind-safe diverging: blue above average, vermillion below (colours in site.css) */
 var CSS=getComputedStyle(document.documentElement);
 var POS=CSS.getPropertyValue('--pos').trim()||'17,138,112',NEG=CSS.getPropertyValue('--neg').trim()||'141,78,168';
@@ -192,7 +197,7 @@ function render(){
   for(var i=0;i<r.length;i++){var row=r[i],a=row.a;
     h+='<tr>'+
       '<td class="l rank">'+(showRank?rk[row.i]:'')+'</td>'+
-      '<td class="l player">'+nice(a[0])+'</td>'+
+      '<td class="l player"><a href="../player/?p='+encodeURIComponent(keyOf(a))+'">'+nice(a[0])+'</a></td>'+
       '<td class="l team" title="'+(TEAMS[a[1]]||a[1])+'">'+a[1]+'</td>'+
       '<td class="l pos c-pos">'+a[2]+'</td>'+
       '<td class="l role c-role">'+(a[12]||'')+'</td>'+
