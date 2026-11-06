@@ -12,16 +12,29 @@
 <style>
 /* Page-specific styles. Tokens, masthead, nav, intro and footer live in ../assets/site.css. */
 
-/* the picker: one search box, same look as the leaderboard controls */
-.pick{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:26px 0 0}
-.pick input{font:400 14px/1 var(--f-sans);color:var(--text);background:var(--panel);
-  border:1px solid var(--rule);border-radius:var(--r);padding:12px 14px;flex:1;min-width:220px;max-width:420px}
+/* the picker: a themed combobox (the native dropdown can't take the site's colours, so it is
+   rebuilt here with the same panel/rule/ink look as the leaderboard controls and the tooltip) */
+.pick{position:relative;margin:26px 0 0;max-width:430px}
+.pick input{width:100%;font:400 14px/1 var(--f-sans);color:var(--text);background:var(--panel);
+  border:1px solid var(--rule);border-radius:var(--r);padding:13px 14px}
 .pick input::placeholder{color:var(--faint)}
 .pick input:focus{outline:1px solid var(--text);outline-offset:0}
-.pick .hint{font-size:12.5px;color:var(--muted)}
+.menu{position:absolute;z-index:40;left:0;right:0;top:calc(100% + 6px);margin:0;padding:5px;list-style:none;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.16);
+  max-height:330px;overflow:auto;display:none}
+.menu.open{display:block}
+.menu li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:9px 10px;border-radius:3px;cursor:pointer}
+.menu li .nm{font:500 14px var(--f-sans);color:var(--text)}
+.menu li .mt{font:400 11px var(--f-mono);letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+.menu li.on,.menu li:hover{background:var(--hover)}
+.menu .none{padding:11px 10px;color:var(--muted);font-size:13px;cursor:default}
 
-/* player head: monogram disc, name, the span of seasons, team run, profile link */
-.phead{display:flex;align-items:center;gap:18px;margin:30px 0 0}
+/* small team mark: the crest when logos.json carries one, the tricode either way */
+.tl{height:16px;width:16px;object-fit:contain;vertical-align:-3px;margin-right:6px}
+.psub .tl{height:17px;width:17px;vertical-align:-4px;margin-right:5px}
+
+/* player head: monogram disc, name, the span of seasons, team run */
+.phead{display:flex;align-items:center;gap:18px;margin:34px 0 0}
 .mono{flex:none;width:58px;height:58px;border-radius:50%;background:var(--raise);border:1px solid var(--rule);
   display:flex;align-items:center;justify-content:center;
   font:400 23px/1 var(--f-serif);letter-spacing:.01em;color:var(--text)}
@@ -30,11 +43,10 @@
 .psub{margin:7px 0 0;font:400 12.5px var(--f-mono);letter-spacing:.04em;color:var(--muted);
   display:flex;flex-wrap:wrap;align-items:center;gap:0}
 .psub span+span::before{content:"";display:inline-block;width:1px;height:11px;background:var(--rule);margin:0 11px;vertical-align:-1px}
-.psub a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--rule)}
-.psub a:hover{border-bottom-color:var(--text);color:var(--text)}
+.psub .teams{display:inline-flex;align-items:center;gap:12px}
 
 /* career line of numbers */
-.stat-row{display:flex;flex-wrap:wrap;gap:0 0;margin:26px 0 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.stat-row{display:flex;flex-wrap:wrap;margin:26px 0 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .stat{flex:1 1 0;min-width:96px;padding:16px 16px 15px;border-left:1px solid var(--line-2)}
 .stat:first-child{border-left:0;padding-left:0}
 .stat .k{font:500 10px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
@@ -79,7 +91,7 @@ td.fpm{width:78px;padding:6px}
 .fchip{border-radius:var(--r);padding:7px 0 6px;text-align:center}
 .fpm .v{display:block;font:500 14px/1.1 var(--f-mono);color:var(--chip-text)}
 .up{color:var(--pos-text)}.dn{color:var(--neg-text)}
-.empty{padding:52px 4px;color:var(--muted);font-size:14px;line-height:1.6}
+.empty{padding:56px 4px;color:var(--muted);font-size:14.5px;line-height:1.65;max-width:52ch}
 .empty b{color:var(--text);font-weight:600}
 
 @media(max-width:820px){.c-age,.c-gp,.c-min{display:none}}
@@ -116,15 +128,15 @@ td.fpm{width:78px;padding:6px}
     a player from the <a href="../leaderboard/">leaderboard</a>.</p>
 
   <div class="pick">
-    <input id="q" type="search" list="players" placeholder="Search a player" autocomplete="off" aria-label="Search a player">
-    <datalist id="players"></datalist>
-    <span class="hint" id="hint"></span>
+    <input id="q" type="text" placeholder="Search a player" autocomplete="off" spellcheck="false"
+           role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="menu" aria-label="Search a player">
+    <ul class="menu" id="menu" role="listbox"></ul>
   </div>
 
   <div class="rule"></div>
 
   <div id="view"></div>
-  <div class="empty" id="empty" style="display:none"></div>
+  <div class="empty" id="empty"></div>
 
   <footer>
     Regular season and the old Top&nbsp;16 only &middot; 2007-08 to 2026-27 &middot; minimum 400 possessions,
@@ -134,12 +146,13 @@ td.fpm{width:78px;padding:6px}
 </div>
 
 <script>
-var META={},DATA={},TEAMS={},SEAS=[],SIDX={},ALL={},ORDER=[],CUR="";
+var META={},DATA={},TEAMS={},LOGOS={},SEAS=[],SIDX={},ALL={},ORDER=[],SEARCH=[],CUR="";
 var $=function(s){return document.getElementById(s)};
 
 /* ---- shared helpers, matching the leaderboard ---- */
 function sgn(v){v=+v;return (v>=0?'+':'')+v.toFixed(2);}
 function sgn1(v){v=+v;return (v>=0?'+':'')+v.toFixed(1);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 var KEEP={II:1,III:1,IV:1,AJ:1,CJ:1,DJ:1,JJ:1,KC:1,OJ:1,PJ:1,RJ:1,TJ:1};
 function nice(n){return n.split(' ').map(function(w){
   if(KEEP[w]||w.length===1)return w;
@@ -153,10 +166,14 @@ function heatFill(v){var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t);
 function heatChip(v){var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t);
   return 'background:rgba('+(t>=0?POS:NEG)+','+(0.18+0.66*a).toFixed(3)+')';}
 
+/* the team mark: a crest when logos.json has one for the code, and the tricode either way.
+   logos.json is an optional { "CODE": "https://.../logo.png" } file beside fpm.json; if it is
+   missing or a code has no url, only the tricode shows. The image removes itself if it fails. */
+function teamMark(code){ var u=LOGOS[code];
+  return (u?'<img class="tl" src="'+esc(u)+'" alt="" loading="lazy" onerror="this.remove()">':'')+esc(code); }
+
 /* a URL-safe key for a player: the EuroLeague code when present, else the raw name */
 function keyOf(a){ return a.length>13&&a[13]? ('id:'+a[13]) : ('nm:'+a[0]); }
-function slugOf(name){ return name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
-  .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 
 /* ---- build the per-player index across every season ---- */
 function buildIndex(){
@@ -168,7 +185,7 @@ function buildIndex(){
       var k=keyOf(a);
       var p=ALL[k]||(ALL[k]={key:k,name:a[0],pid:(a.length>13?a[13]:''),rows:[]});
       if(a.length>13&&a[13])p.pid=a[13];
-      p.name=a[0];   // seasons are read oldest-first, so this ends on the most recent spelling
+      p.name=a[0];   // seasons read oldest-first, so this ends on the most recent spelling
       p.rows.push({code:s.code,label:s.label,si:SIDX[s.code],
         team:a[1],tier:a[2],age:+a[3],gp:+a[4],min:+a[5],poss:+a[6],
         fpm:+a[7],o:+a[8],d:+a[9],se:+a[10],pct:+a[11],role:a[12]||''});
@@ -176,28 +193,21 @@ function buildIndex(){
   });
   Object.keys(ALL).forEach(function(k){ALL[k].rows.sort(function(x,y){return x.si-y.si;});});
   ORDER=Object.keys(ALL).sort(function(x,y){return nice(ALL[x].name).localeCompare(nice(ALL[y].name));});
-  // the datalist of names (nice-cased), value carries the key after a tab we strip on submit
-  var dl=$('players'),h='';
-  ORDER.forEach(function(k){var p=ALL[k];h+='<option value="'+nice(p.name).replace(/"/g,'&quot;')+'">';});
-  dl.innerHTML=h;
+  SEARCH=ORDER.map(function(k){var p=ALL[k],last=p.rows[p.rows.length-1];
+    var nm=nice(p.name);
+    return {key:k,nice:nm,low:nm.toLowerCase(),sub:p.rows.length+(p.rows.length>1?' seasons':' season')+' · '+last.team};});
 }
 
-/* resolve ?p= or a typed name to a player key */
+/* resolve ?p= (id:... / nm:... / a bare name) to a player key */
 function resolveParam(){
   var q=new URLSearchParams(location.search).get('p');
   if(!q)return null;
-  if(ALL[q])return q;                                    // exact key hit (id:... or nm:...)
+  if(ALL[q])return q;
   var m=q.match(/^(id|nm):([\s\S]*)$/i), kind=m?m[1].toLowerCase():'', val=(m?m[2]:q);
   for(var k in ALL){ var p=ALL[k];
     if(kind==='id'&&p.pid&&(p.pid===val||('P'+val)===p.pid||p.pid===('P'+val)))return k;
     if(kind!=='id'&&(p.name===val.toUpperCase()||nice(p.name).toLowerCase()===val.toLowerCase()))return k;
   }
-  return null;
-}
-function keyForName(txt){
-  if(!txt)return null; txt=txt.trim().toLowerCase();
-  for(var i=0;i<ORDER.length;i++){ if(nice(ALL[ORDER[i]].name).toLowerCase()===txt)return ORDER[i]; }
-  for(var j=0;j<ORDER.length;j++){ if(nice(ALL[ORDER[j]].name).toLowerCase().indexOf(txt)===0)return ORDER[j]; }
   return null;
 }
 
@@ -213,14 +223,12 @@ function drawChart(p){
   var Y=function(v){ return PADT + (hi-v)/(hi-lo)*(H-PADT-PADB); };
 
   var g='';
-  // y gridlines + labels at a few round values
   var ticks=yticks(lo,hi);
   ticks.forEach(function(t){ var y=Y(t).toFixed(1);
     g+='<line class="'+(t===0?'zero':'grid')+'" x1="'+PADL+'" x2="'+(W-PADR)+'" y1="'+y+'" y2="'+y+'"/>';
     g+='<text x="'+(PADL-8)+'" y="'+y+'" text-anchor="end" dominant-baseline="middle" font-size="11">'+(t>0?'+':'')+t+'</text>'; });
   g+='<text x="'+(PADL-8)+'" y="'+(Y(0)-10).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="var(--faint)">avg</text>';
 
-  // x ticks: one per season in the span; label every season if few, else every other
   var every=span>12?2:1;
   for(var si=i0;si<=i1;si++){ var sc=SEAS[si]; if(!sc)continue;
     var x=X(si).toFixed(1), yr=sc.label.slice(2,4);
@@ -229,25 +237,22 @@ function drawChart(p){
   }
   g+='<line class="axis" x1="'+PADL+'" x2="'+(W-PADR)+'" y1="'+(H-PADB)+'" y2="'+(H-PADB)+'"/>';
 
-  // the line, broken where a season was missed (gap in si)
   var segs=[],cur=[];
   for(var r=0;r<n;r++){ if(r>0 && rows[r].si-rows[r-1].si>1){ if(cur.length)segs.push(cur); cur=[]; } cur.push(rows[r]); }
   if(cur.length)segs.push(cur);
   segs.forEach(function(seg){ if(seg.length<2)return;
     var d=seg.map(function(r,ix){return (ix?'L':'M')+X(r.si).toFixed(1)+' '+Y(r.fpm).toFixed(1);}).join(' ');
     g+='<path class="fline" d="'+d+'"/>'; });
-  // single lone points still get a marker; markers for all
   var peak=rows.reduce(function(a,b){return b.fpm>a.fpm?b:a;},rows[0]);
   rows.forEach(function(r){ var x=X(r.si).toFixed(1), y=Y(r.fpm).toFixed(1);
     g+='<circle class="ring" cx="'+x+'" cy="'+y+'" r="5.5" fill="'+heatFill(r.fpm)+'"/>';
     if(r===peak||r.code===rows[n-1].code){
       g+='<text x="'+x+'" y="'+(r.fpm>=0?(+y-11):(+y+18)).toFixed(1)+'" text-anchor="middle" font-size="11.5" fill="var(--text)">'+sgn1(r.fpm)+'</text>'; }
   });
-  // crosshair + invisible hit targets
   g+='<line id="cx" class="cross" y1="'+PADT+'" y2="'+(H-PADB)+'"/>';
   rows.forEach(function(r,ix){ g+='<rect class="hit" data-i="'+ix+'" x="'+(X(r.si)-Math.max(10,(W-PADL-PADR)/span/2)).toFixed(1)+'" y="'+PADT+'" width="'+Math.max(20,(W-PADL-PADR)/span).toFixed(1)+'" height="'+(H-PADT-PADB)+'"/>'; });
 
-  var svg='<svg id="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="FPM by season for '+nice(p.name)+'">'+g+'</svg>';
+  var svg='<svg id="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="FPM by season for '+esc(nice(p.name))+'">'+g+'</svg>';
   return {svg:svg,rows:rows,X:X,Y:Y};
 }
 function yticks(lo,hi){ var span=hi-lo,step=span>12?4:(span>6?2:1),out=[],s=Math.ceil(lo/step)*step;
@@ -258,7 +263,7 @@ function yticks(lo,hi){ var span=hi-lo,step=span>12?4:(span>6?2:1),out=[],s=Math
 function render(k){
   var p=ALL[k]; if(!p){showEmpty();return;}
   history.replaceState(null,'','?p='+encodeURIComponent(k));
-  $('q').value=nice(p.name); $('empty').style.display='none';
+  closeMenu(); $('q').value=nice(p.name); $('empty').textContent='';
   var rows=p.rows,n=rows.length,last=rows[n-1];
   var peak=rows.reduce(function(a,b){return b.fpm>a.fpm?b:a;},rows[0]);
   var bestO=rows.reduce(function(a,b){return b.o>a.o?b:a;},rows[0]);
@@ -267,19 +272,14 @@ function render(k){
   var initials=nice(p.name).split(' ').filter(function(w){return /[A-Za-z]/.test(w);});
   initials=((initials[0]||' ')[0]+(initials.length>1?initials[initials.length-1][0]:'')).toUpperCase();
 
-  var prof='';
-  if(p.pid){ var code=String(p.pid).replace(/^P/,'');
-    prof='<a href="https://www.euroleaguebasketball.net/en/euroleague/players/'+slugOf(nice(p.name))+'/'+code+'/" target="_blank" rel="noopener">EuroLeague profile &#8599;</a>'; }
-
   var ch=drawChart(p);
   var h=''
     +'<div class="phead">'
-    +'  <div class="mono" aria-hidden="true">'+initials+'</div>'
-    +'  <div class="pname"><h2>'+nice(p.name)+'</h2>'
+    +'  <div class="mono" aria-hidden="true">'+esc(initials)+'</div>'
+    +'  <div class="pname"><h2>'+esc(nice(p.name))+'</h2>'
     +'    <div class="psub"><span>'+rows[0].label+' to '+last.label+'</span>'
     +'      <span>'+n+' season'+(n>1?'s':'')+'</span>'
-    +'      <span>'+teams.join(' &middot; ')+'</span>'
-    +(prof?'      <span>'+prof+'</span>':'')
+    +'      <span class="teams">'+teams.map(teamMark).join('<span style="color:var(--rule)">&middot;</span>')+'</span>'
     +'    </div></div>'
     +'</div>'
 
@@ -304,8 +304,8 @@ function render(k){
   for(var i=n-1;i>=0;i--){var r=rows[i];
     h+='<tr'+(r.code===CUR?' class="cur"':'')+'>'
       +'<td class="l s-seas">'+r.label+'</td>'
-      +'<td class="l s-team" title="'+(TEAMS[r.team]||r.team)+'">'+r.team+'</td>'
-      +'<td class="l s-role c-role">'+r.role+'</td>'
+      +'<td class="l s-team" title="'+esc(TEAMS[r.team]||r.team)+'">'+teamMark(r.team)+'</td>'
+      +'<td class="l s-role c-role">'+esc(r.role)+'</td>'
       +'<td class="c-age">'+(r.age?Math.round(r.age):'')+'</td>'
       +'<td class="c-gp">'+r.gp+'</td>'
       +'<td class="c-min">'+r.min+'</td>'
@@ -321,17 +321,16 @@ function val(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+
 
 /* hover readout on the chart */
 function wireHover(ch){
-  var svg=$('chart'),tip=$('tip'),cx=$('cx'),wrap=svg.parentNode;
+  var svg=$('chart'),tip=$('tip'),cx=$('cx');
   var hits=svg.querySelectorAll('.hit'),rings=svg.querySelectorAll('circle.ring');
   function show(ix){ var r=ch.rows[ix]; if(!r)return;
     var px=ch.X(r.si),py=ch.Y(r.fpm);
     var box=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal,sx=box.width/vb.width,sy=box.height/vb.height;
     cx.setAttribute('x1',px);cx.setAttribute('x2',px);cx.style.opacity=1;
     rings.forEach(function(c,j){c.setAttribute('r',j===ix?'7':'5.5');});
-    tip.style.opacity=1;
-    tip.style.left=(px*sx)+'px'; tip.style.top=(py*sy-12)+'px';
+    tip.style.opacity=1; tip.style.left=(px*sx)+'px'; tip.style.top=(py*sy-12)+'px';
     tip.innerHTML='<b>'+r.label+'</b> &middot; FPM <b>'+sgn(r.fpm)+'</b><br>O '+od(r.o)+' &nbsp; D '+od(r.d)+' &nbsp;'
-      +'<span style="color:var(--muted)">'+r.team+' &middot; '+r.poss+' poss</span>';
+      +'<span style="color:var(--muted)">'+esc(r.team)+' &middot; '+r.poss+' poss</span>';
   }
   function hide(){ tip.style.opacity=0; cx.style.opacity=0; rings.forEach(function(c){c.setAttribute('r','5.5');}); }
   hits.forEach(function(ht){ var ix=+ht.getAttribute('data-i');
@@ -343,28 +342,61 @@ function wireHover(ch){
 }
 
 function showEmpty(msg){
-  $('view').innerHTML=''; var e=$('empty'); e.style.display='block';
-  e.innerHTML=msg||'<b>No player selected.</b><br>Search a name above, or open one from the leaderboard.';
+  $('view').innerHTML=''; $('empty').innerHTML=msg||'Search a player above to see their FPM across the seasons, season by season, with offense and defense split out.';
 }
 
-/* picker events */
-$('q').addEventListener('change',function(){var k=keyForName(this.value);if(k)render(k);});
-$('q').addEventListener('keydown',function(e){if(e.key==='Enter'){var k=keyForName(this.value);if(k)render(k);else showEmpty('<b>No player by that name.</b><br>Check the spelling, or pick from the list.');}});
+/* ---- the themed combobox ---- */
+var MENU={items:[],active:-1,open:false};
+function filterList(q){ q=q.trim().toLowerCase(); if(!q)return [];
+  var starts=[],contains=[];
+  for(var i=0;i<SEARCH.length;i++){ var s=SEARCH[i], ix=s.low.indexOf(q);
+    if(ix===0)starts.push(s); else if(ix>0)contains.push(s);
+    if(starts.length>=40)break; }
+  return starts.concat(contains).slice(0,12);
+}
+function openMenu(list){ var el=$('menu'); MENU.items=list; MENU.active=list.length?0:-1;
+  if(!list.length){ el.innerHTML='<li class="none">No player by that name</li>'; }
+  else el.innerHTML=list.map(function(it,i){
+    return '<li role="option" data-k="'+encodeURIComponent(it.key)+'" class="'+(i===0?'on':'')+'">'
+      +'<span class="nm">'+esc(it.nice)+'</span><span class="mt">'+esc(it.sub)+'</span></li>'; }).join('');
+  el.classList.add('open'); $('q').setAttribute('aria-expanded','true'); MENU.open=true;
+}
+function closeMenu(){ var el=$('menu'); if(el){el.classList.remove('open');el.innerHTML='';}
+  var q=$('q'); if(q)q.setAttribute('aria-expanded','false'); MENU.open=false; MENU.active=-1; }
+function paintActive(){ var lis=$('menu').querySelectorAll('li[data-k]');
+  for(var i=0;i<lis.length;i++)lis[i].classList.toggle('on',i===MENU.active);
+  var a=lis[MENU.active]; if(a)a.scrollIntoView({block:'nearest'}); }
+function pick(key){ render(key); }
+
+var qel=$('q');
+qel.addEventListener('input',function(){ var v=this.value; if(v.trim())openMenu(filterList(v)); else closeMenu(); });
+qel.addEventListener('focus',function(){ if(this.value.trim())openMenu(filterList(this.value)); });
+qel.addEventListener('keydown',function(e){
+  if(!MENU.open){ if(e.key==='ArrowDown'&&this.value.trim()){openMenu(filterList(this.value));e.preventDefault();} return; }
+  if(e.key==='ArrowDown'){MENU.active=Math.min(MENU.active+1,MENU.items.length-1);paintActive();e.preventDefault();}
+  else if(e.key==='ArrowUp'){MENU.active=Math.max(MENU.active-1,0);paintActive();e.preventDefault();}
+  else if(e.key==='Enter'){ if(MENU.items[MENU.active]){pick(MENU.items[MENU.active].key);e.preventDefault();} }
+  else if(e.key==='Escape'){closeMenu();}
+});
+$('menu').addEventListener('mousedown',function(e){ var li=e.target.closest('li[data-k]');
+  if(li){ e.preventDefault(); pick(decodeURIComponent(li.getAttribute('data-k'))); } });
+document.addEventListener('click',function(e){ if(!e.target.closest('.pick'))closeMenu(); });
 
 /* ---- load ---- */
 function grab(name){
   return fetch(name).then(function(r){if(!r.ok)throw 0;return r.json();})
     .catch(function(){return fetch('https://raw.githubusercontent.com/filippospol/FPM/main/docs/leaderboard/'+name,{cache:'no-store'}).then(function(r){return r.json();});});
 }
-Promise.all([grab('../leaderboard/fpm.json'),grab('../leaderboard/teams.json')]).then(function(res){
-  META=res[0]||{};DATA=META.data||{};TEAMS=res[1]||{};
+Promise.all([
+  grab('../leaderboard/fpm.json'),
+  grab('../leaderboard/teams.json'),
+  grab('../leaderboard/logos.json').catch(function(){return {};})   // optional
+]).then(function(res){
+  META=res[0]||{};DATA=META.data||{};TEAMS=res[1]||{};LOGOS=res[2]||{};
   buildIndex();
   var k=resolveParam();
-  if(!k){ // default landing: the top player of the current season
-    var top=(DATA[CUR]||[])[0]; if(top)k=keyOf(top);
-  }
-  if(k)render(k); else showEmpty();
-}).catch(function(){showEmpty('<b>Could not load the data.</b><br>Please try again in a moment.');});
+  if(k)render(k); else showEmpty();     // no default player: start empty, let the user pick
+}).catch(function(){showEmpty('<b>Could not load the data.</b> Please try again in a moment.');});
 </script>
 <script src="../assets/site.js" data-json="../leaderboard/fpm.json"></script>
 </body>
