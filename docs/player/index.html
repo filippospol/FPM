@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* apply a remembered theme before the page paints */try{var t=localStorage.getItem("fpm-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<title>FPM - Player</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<meta name="description" content="A EuroLeague player's FPM across seasons: the trend in impact, split into offense and defense, season by season.">
+<style>
+/* Page-specific styles. Tokens, masthead, nav, intro and footer live in ../assets/site.css. */
+
+/* the picker: one search box, same look as the leaderboard controls */
+.pick{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:26px 0 0}
+.pick input{font:400 14px/1 var(--f-sans);color:var(--text);background:var(--panel);
+  border:1px solid var(--rule);border-radius:var(--r);padding:12px 14px;flex:1;min-width:220px;max-width:420px}
+.pick input::placeholder{color:var(--faint)}
+.pick input:focus{outline:1px solid var(--text);outline-offset:0}
+.pick .hint{font-size:12.5px;color:var(--muted)}
+
+/* player head: monogram disc, name, the span of seasons, team run, profile link */
+.phead{display:flex;align-items:center;gap:18px;margin:30px 0 0}
+.mono{flex:none;width:58px;height:58px;border-radius:50%;background:var(--raise);border:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:center;
+  font:400 23px/1 var(--f-serif);letter-spacing:.01em;color:var(--text)}
+.pname{min-width:0}
+.pname h2{font:400 clamp(30px,5vw,42px)/1 var(--f-serif);letter-spacing:-.02em;color:var(--text);margin:0}
+.psub{margin:7px 0 0;font:400 12.5px var(--f-mono);letter-spacing:.04em;color:var(--muted);
+  display:flex;flex-wrap:wrap;align-items:center;gap:0}
+.psub span+span::before{content:"";display:inline-block;width:1px;height:11px;background:var(--rule);margin:0 11px;vertical-align:-1px}
+.psub a{color:var(--sec);text-decoration:none;border-bottom:1px solid var(--rule)}
+.psub a:hover{border-bottom-color:var(--text);color:var(--text)}
+
+/* career line of numbers */
+.stat-row{display:flex;flex-wrap:wrap;gap:0 0;margin:26px 0 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.stat{flex:1 1 0;min-width:96px;padding:16px 16px 15px;border-left:1px solid var(--line-2)}
+.stat:first-child{border-left:0;padding-left:0}
+.stat .k{font:500 10px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.stat .v{margin-top:7px;font:400 24px/1 var(--f-mono);font-variant-numeric:tabular-nums;color:var(--text)}
+.stat .v small{font-size:12.5px;color:var(--muted);margin-left:4px}
+.stat .v .up{color:var(--pos-text)}.stat .v .dn{color:var(--neg-text)}
+
+/* chart */
+.chartwrap{position:relative;margin:30px 0 0}
+.chart-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 6px}
+.chart-h h3{font:400 20px/1 var(--f-serif);color:var(--text);margin:0}
+.chart-h .note{font:400 11.5px var(--f-mono);letter-spacing:.04em;color:var(--muted)}
+#chart{width:100%;height:auto;display:block;touch-action:pan-y}
+#chart text{font-family:var(--f-mono);fill:var(--muted)}
+.axis{stroke:var(--rule)}
+.grid{stroke:var(--line-2)}
+.zero{stroke:var(--muted);stroke-dasharray:2 3}
+.fline{fill:none;stroke:var(--text);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.ring{stroke:var(--bg);stroke-width:2}
+.hit{fill:transparent;cursor:pointer}
+.cross{stroke:var(--muted);stroke-dasharray:2 3;opacity:0}
+.tip{position:absolute;z-index:30;pointer-events:none;opacity:0;transform:translate(-50%,-100%);
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:9px 11px;white-space:nowrap;
+  font:400 12px/1.5 var(--f-sans);color:var(--sec);box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.tip b{color:var(--text);font-weight:600;font-family:var(--f-mono)}
+.tip .up{color:var(--pos-text)}.tip .dn{color:var(--neg-text)}
+
+/* season table, same ledger treatment as the leaderboard */
+.scroll{margin-top:34px}
+table{width:100%;border-collapse:separate;border-spacing:0}
+thead th{font:500 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  text-align:right;padding:14px 10px 11px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th.l{text-align:left}
+tbody td{font:400 14px var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;padding:12px 10px;
+  border-bottom:1px solid var(--line-2);white-space:nowrap;color:var(--sec)}
+tbody td.l{text-align:left}
+tbody tr:hover td{background:var(--hover)}
+tbody tr.cur td{background:var(--raise)}
+.s-seas{color:var(--text);font-weight:500;font-family:var(--f-sans)}
+.s-team,.s-role{font-family:var(--f-sans);color:var(--muted)}
+td.fpm{width:78px;padding:6px}
+.fchip{border-radius:var(--r);padding:7px 0 6px;text-align:center}
+.fpm .v{display:block;font:500 14px/1.1 var(--f-mono);color:var(--chip-text)}
+.up{color:var(--pos-text)}.dn{color:var(--neg-text)}
+.empty{padding:52px 4px;color:var(--muted);font-size:14px;line-height:1.6}
+.empty b{color:var(--text);font-weight:600}
+
+@media(max-width:820px){.c-age,.c-gp,.c-min{display:none}}
+@media(max-width:620px){
+  .c-poss,.c-role{display:none}
+  .stat{min-width:50%;flex-basis:50%;border-left:0;border-top:1px solid var(--line-2);padding-left:0}
+  .stat:nth-child(1),.stat:nth-child(2){border-top:0}
+}
+</style>
+</head>
+<body data-top>
+<div class="wrap">
+  <header class="mast">
+    <a class="brand" href="../">
+      <div class="row"><h1>FPM</h1><span class="exp">Fair Plus-Minus</span></div>
+      <div class="mark"></div>
+    </a>
+    <nav class="nav" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="../leaderboard/">Leaderboard</a>
+      <a href="./" aria-current="page">Players</a>
+      <a href="../about/">About</a>
+      <button class="theme" id="theme" type="button" aria-label="Switch between light and dark"><span class="on-light">Dark</span><span class="on-dark">Light</span></button>
+    </nav>
+  </header>
+
+  <div class="credit">
+    <span>Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></span>
+    <span id="updated"></span>
+  </div>
+
+  <p class="lede">A single player's <b>FPM</b> across the seasons, in points per 100 possessions above an
+    average player, with each season split into <b>offense</b> and <b>defense</b>. Search a name, or open
+    a player from the <a href="../leaderboard/">leaderboard</a>.</p>
+
+  <div class="pick">
+    <input id="q" type="search" list="players" placeholder="Search a player" autocomplete="off" aria-label="Search a player">
+    <datalist id="players"></datalist>
+    <span class="hint" id="hint"></span>
+  </div>
+
+  <div class="rule"></div>
+
+  <div id="view"></div>
+  <div class="empty" id="empty" style="display:none"></div>
+
+  <footer>
+    Regular season and the old Top&nbsp;16 only &middot; 2007-08 to 2026-27 &middot; minimum 400 possessions,
+    120 in the current season &middot; a season is only shown where a player cleared that line.
+    <div class="by">Feedback: <a href="mailto:polyzos.filippos@gmail.com">polyzos.filippos@gmail.com</a></div>
+  </footer>
+</div>
+
+<script>
+var META={},DATA={},TEAMS={},SEAS=[],SIDX={},ALL={},ORDER=[],CUR="";
+var $=function(s){return document.getElementById(s)};
+
+/* ---- shared helpers, matching the leaderboard ---- */
+function sgn(v){v=+v;return (v>=0?'+':'')+v.toFixed(2);}
+function sgn1(v){v=+v;return (v>=0?'+':'')+v.toFixed(1);}
+var KEEP={II:1,III:1,IV:1,AJ:1,CJ:1,DJ:1,JJ:1,KC:1,OJ:1,PJ:1,RJ:1,TJ:1};
+function nice(n){return n.split(' ').map(function(w){
+  if(KEEP[w]||w.length===1)return w;
+  w=w.toLowerCase().replace(/(^|[-'.´’])(\p{L})/gu,function(m,p,c){return p+c.toUpperCase();});
+  return w.replace(/(^|-)Mc(\p{L})/gu,function(m,p,c){return p+'Mc'+c.toUpperCase();});}).join(' ');}
+function od(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+sgn(v)+'</span>';}
+var CSS=getComputedStyle(document.documentElement);
+var POS=CSS.getPropertyValue('--pos').trim()||'17,138,112',NEG=CSS.getPropertyValue('--neg').trim()||'141,78,168';
+function heatFill(v){var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t);
+  return 'rgba('+(t>=0?POS:NEG)+','+(0.30+0.60*a).toFixed(3)+')';}
+function heatChip(v){var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t);
+  return 'background:rgba('+(t>=0?POS:NEG)+','+(0.18+0.66*a).toFixed(3)+')';}
+
+/* a URL-safe key for a player: the EuroLeague code when present, else the raw name */
+function keyOf(a){ return a.length>13&&a[13]? ('id:'+a[13]) : ('nm:'+a[0]); }
+function slugOf(name){ return name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+
+/* ---- build the per-player index across every season ---- */
+function buildIndex(){
+  SEAS=META.seasons||[]; CUR=META.current||(SEAS.length?SEAS[SEAS.length-1].code:"");
+  SEAS.forEach(function(s,i){SIDX[s.code]=i;});
+  ALL={};
+  SEAS.forEach(function(s){
+    (DATA[s.code]||[]).forEach(function(a){
+      var k=keyOf(a);
+      var p=ALL[k]||(ALL[k]={key:k,name:a[0],pid:(a.length>13?a[13]:''),rows:[]});
+      if(a.length>13&&a[13])p.pid=a[13];
+      p.name=a[0];   // seasons are read oldest-first, so this ends on the most recent spelling
+      p.rows.push({code:s.code,label:s.label,si:SIDX[s.code],
+        team:a[1],tier:a[2],age:+a[3],gp:+a[4],min:+a[5],poss:+a[6],
+        fpm:+a[7],o:+a[8],d:+a[9],se:+a[10],pct:+a[11],role:a[12]||''});
+    });
+  });
+  Object.keys(ALL).forEach(function(k){ALL[k].rows.sort(function(x,y){return x.si-y.si;});});
+  ORDER=Object.keys(ALL).sort(function(x,y){return nice(ALL[x].name).localeCompare(nice(ALL[y].name));});
+  // the datalist of names (nice-cased), value carries the key after a tab we strip on submit
+  var dl=$('players'),h='';
+  ORDER.forEach(function(k){var p=ALL[k];h+='<option value="'+nice(p.name).replace(/"/g,'&quot;')+'">';});
+  dl.innerHTML=h;
+}
+
+/* resolve ?p= or a typed name to a player key */
+function resolveParam(){
+  var q=new URLSearchParams(location.search).get('p');
+  if(!q)return null;
+  if(ALL[q])return q;                                    // exact key hit (id:... or nm:...)
+  var m=q.match(/^(id|nm):([\s\S]*)$/i), kind=m?m[1].toLowerCase():'', val=(m?m[2]:q);
+  for(var k in ALL){ var p=ALL[k];
+    if(kind==='id'&&p.pid&&(p.pid===val||('P'+val)===p.pid||p.pid===('P'+val)))return k;
+    if(kind!=='id'&&(p.name===val.toUpperCase()||nice(p.name).toLowerCase()===val.toLowerCase()))return k;
+  }
+  return null;
+}
+function keyForName(txt){
+  if(!txt)return null; txt=txt.trim().toLowerCase();
+  for(var i=0;i<ORDER.length;i++){ if(nice(ALL[ORDER[i]].name).toLowerCase()===txt)return ORDER[i]; }
+  for(var j=0;j<ORDER.length;j++){ if(nice(ALL[ORDER[j]].name).toLowerCase().indexOf(txt)===0)return ORDER[j]; }
+  return null;
+}
+
+/* ---- the career line chart (inline SVG) ---- */
+function drawChart(p){
+  var W=920,H=360,PADL=44,PADR=18,PADT=24,PADB=40;
+  var rows=p.rows, n=rows.length;
+  var i0=rows[0].si, i1=rows[n-1].si, span=Math.max(1,i1-i0);
+  var fv=rows.map(function(r){return r.fpm;});
+  var lo=Math.min(0,Math.min.apply(null,fv)), hi=Math.max(0,Math.max.apply(null,fv));
+  var padY=Math.max(0.5,(hi-lo)*0.12); lo-=padY; hi+=padY;
+  var X=function(si){ return PADL + (span? (si-i0)/span : 0.5)*(W-PADL-PADR); };
+  var Y=function(v){ return PADT + (hi-v)/(hi-lo)*(H-PADT-PADB); };
+
+  var g='';
+  // y gridlines + labels at a few round values
+  var ticks=yticks(lo,hi);
+  ticks.forEach(function(t){ var y=Y(t).toFixed(1);
+    g+='<line class="'+(t===0?'zero':'grid')+'" x1="'+PADL+'" x2="'+(W-PADR)+'" y1="'+y+'" y2="'+y+'"/>';
+    g+='<text x="'+(PADL-8)+'" y="'+y+'" text-anchor="end" dominant-baseline="middle" font-size="11">'+(t>0?'+':'')+t+'</text>'; });
+  g+='<text x="'+(PADL-8)+'" y="'+(Y(0)-10).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="var(--faint)">avg</text>';
+
+  // x ticks: one per season in the span; label every season if few, else every other
+  var every=span>12?2:1;
+  for(var si=i0;si<=i1;si++){ var sc=SEAS[si]; if(!sc)continue;
+    var x=X(si).toFixed(1), yr=sc.label.slice(2,4);
+    g+='<line class="grid" x1="'+x+'" x2="'+x+'" y1="'+(H-PADB)+'" y2="'+(H-PADB+4)+'"/>';
+    if((si-i0)%every===0) g+='<text x="'+x+'" y="'+(H-PADB+17)+'" text-anchor="middle" font-size="10.5">'+yr+'</text>';
+  }
+  g+='<line class="axis" x1="'+PADL+'" x2="'+(W-PADR)+'" y1="'+(H-PADB)+'" y2="'+(H-PADB)+'"/>';
+
+  // the line, broken where a season was missed (gap in si)
+  var segs=[],cur=[];
+  for(var r=0;r<n;r++){ if(r>0 && rows[r].si-rows[r-1].si>1){ if(cur.length)segs.push(cur); cur=[]; } cur.push(rows[r]); }
+  if(cur.length)segs.push(cur);
+  segs.forEach(function(seg){ if(seg.length<2)return;
+    var d=seg.map(function(r,ix){return (ix?'L':'M')+X(r.si).toFixed(1)+' '+Y(r.fpm).toFixed(1);}).join(' ');
+    g+='<path class="fline" d="'+d+'"/>'; });
+  // single lone points still get a marker; markers for all
+  var peak=rows.reduce(function(a,b){return b.fpm>a.fpm?b:a;},rows[0]);
+  rows.forEach(function(r){ var x=X(r.si).toFixed(1), y=Y(r.fpm).toFixed(1);
+    g+='<circle class="ring" cx="'+x+'" cy="'+y+'" r="5.5" fill="'+heatFill(r.fpm)+'"/>';
+    if(r===peak||r.code===rows[n-1].code){
+      g+='<text x="'+x+'" y="'+(r.fpm>=0?(+y-11):(+y+18)).toFixed(1)+'" text-anchor="middle" font-size="11.5" fill="var(--text)">'+sgn1(r.fpm)+'</text>'; }
+  });
+  // crosshair + invisible hit targets
+  g+='<line id="cx" class="cross" y1="'+PADT+'" y2="'+(H-PADB)+'"/>';
+  rows.forEach(function(r,ix){ g+='<rect class="hit" data-i="'+ix+'" x="'+(X(r.si)-Math.max(10,(W-PADL-PADR)/span/2)).toFixed(1)+'" y="'+PADT+'" width="'+Math.max(20,(W-PADL-PADR)/span).toFixed(1)+'" height="'+(H-PADT-PADB)+'"/>'; });
+
+  var svg='<svg id="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="FPM by season for '+nice(p.name)+'">'+g+'</svg>';
+  return {svg:svg,rows:rows,X:X,Y:Y};
+}
+function yticks(lo,hi){ var span=hi-lo,step=span>12?4:(span>6?2:1),out=[],s=Math.ceil(lo/step)*step;
+  for(var t=s;t<=hi+1e-9;t+=step)out.push(Math.round(t)); if(out.indexOf(0)<0&&lo<0&&hi>0)out.push(0);
+  return out.sort(function(a,b){return a-b;}); }
+
+/* ---- render a player ---- */
+function render(k){
+  var p=ALL[k]; if(!p){showEmpty();return;}
+  history.replaceState(null,'','?p='+encodeURIComponent(k));
+  $('q').value=nice(p.name); $('empty').style.display='none';
+  var rows=p.rows,n=rows.length,last=rows[n-1];
+  var peak=rows.reduce(function(a,b){return b.fpm>a.fpm?b:a;},rows[0]);
+  var bestO=rows.reduce(function(a,b){return b.o>a.o?b:a;},rows[0]);
+  var bestD=rows.reduce(function(a,b){return b.d>a.d?b:a;},rows[0]);
+  var teams=[];rows.forEach(function(r){if(teams[teams.length-1]!==r.team)teams.push(r.team);});
+  var initials=nice(p.name).split(' ').filter(function(w){return /[A-Za-z]/.test(w);});
+  initials=((initials[0]||' ')[0]+(initials.length>1?initials[initials.length-1][0]:'')).toUpperCase();
+
+  var prof='';
+  if(p.pid){ var code=String(p.pid).replace(/^P/,'');
+    prof='<a href="https://www.euroleaguebasketball.net/en/euroleague/players/'+slugOf(nice(p.name))+'/'+code+'/" target="_blank" rel="noopener">EuroLeague profile &#8599;</a>'; }
+
+  var ch=drawChart(p);
+  var h=''
+    +'<div class="phead">'
+    +'  <div class="mono" aria-hidden="true">'+initials+'</div>'
+    +'  <div class="pname"><h2>'+nice(p.name)+'</h2>'
+    +'    <div class="psub"><span>'+rows[0].label+' to '+last.label+'</span>'
+    +'      <span>'+n+' season'+(n>1?'s':'')+'</span>'
+    +'      <span>'+teams.join(' &middot; ')+'</span>'
+    +(prof?'      <span>'+prof+'</span>':'')
+    +'    </div></div>'
+    +'</div>'
+
+    +'<div class="stat-row">'
+    +'  <div class="stat"><div class="k">Latest</div><div class="v">'+val(last.fpm)+'<small>'+last.label+'</small></div></div>'
+    +'  <div class="stat"><div class="k">Peak</div><div class="v">'+val(peak.fpm)+'<small>'+peak.label+'</small></div></div>'
+    +'  <div class="stat"><div class="k">Best offense</div><div class="v">'+val(bestO.o)+'<small>'+bestO.label+'</small></div></div>'
+    +'  <div class="stat"><div class="k">Best defense</div><div class="v">'+val(bestD.d)+'<small>'+bestD.label+'</small></div></div>'
+    +'</div>'
+
+    +'<div class="chartwrap">'
+    +'  <div class="chart-h"><h3>FPM by season</h3><span class="note">points per 100 vs an average player</span></div>'
+    +ch.svg
+    +'  <div class="tip" id="tip"></div>'
+    +'</div>'
+
+    +'<div class="scroll"><table><thead><tr>'
+    +'<th class="l">Season</th><th class="l">Team</th><th class="l c-role">Role</th>'
+    +'<th class="c-age">Age</th><th class="c-gp">GP</th><th class="c-min">Min</th><th class="c-poss">Poss</th>'
+    +'<th>FPM</th><th>O-FPM</th><th>D-FPM</th>'
+    +'</tr></thead><tbody>';
+  for(var i=n-1;i>=0;i--){var r=rows[i];
+    h+='<tr'+(r.code===CUR?' class="cur"':'')+'>'
+      +'<td class="l s-seas">'+r.label+'</td>'
+      +'<td class="l s-team" title="'+(TEAMS[r.team]||r.team)+'">'+r.team+'</td>'
+      +'<td class="l s-role c-role">'+r.role+'</td>'
+      +'<td class="c-age">'+(r.age?Math.round(r.age):'')+'</td>'
+      +'<td class="c-gp">'+r.gp+'</td>'
+      +'<td class="c-min">'+r.min+'</td>'
+      +'<td class="c-poss">'+r.poss+'</td>'
+      +'<td class="fpm"><div class="fchip" style="'+heatChip(r.fpm)+'"><span class="v">'+sgn(r.fpm)+'</span></div></td>'
+      +'<td>'+od(r.o)+'</td><td>'+od(r.d)+'</td></tr>';
+  }
+  h+='</tbody></table></div>';
+  $('view').innerHTML=h;
+  wireHover(ch);
+}
+function val(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+sgn(v)+'</span>';}
+
+/* hover readout on the chart */
+function wireHover(ch){
+  var svg=$('chart'),tip=$('tip'),cx=$('cx'),wrap=svg.parentNode;
+  var hits=svg.querySelectorAll('.hit'),rings=svg.querySelectorAll('circle.ring');
+  function show(ix){ var r=ch.rows[ix]; if(!r)return;
+    var px=ch.X(r.si),py=ch.Y(r.fpm);
+    var box=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal,sx=box.width/vb.width,sy=box.height/vb.height;
+    cx.setAttribute('x1',px);cx.setAttribute('x2',px);cx.style.opacity=1;
+    rings.forEach(function(c,j){c.setAttribute('r',j===ix?'7':'5.5');});
+    tip.style.opacity=1;
+    tip.style.left=(px*sx)+'px'; tip.style.top=(py*sy-12)+'px';
+    tip.innerHTML='<b>'+r.label+'</b> &middot; FPM <b>'+sgn(r.fpm)+'</b><br>O '+od(r.o)+' &nbsp; D '+od(r.d)+' &nbsp;'
+      +'<span style="color:var(--muted)">'+r.team+' &middot; '+r.poss+' poss</span>';
+  }
+  function hide(){ tip.style.opacity=0; cx.style.opacity=0; rings.forEach(function(c){c.setAttribute('r','5.5');}); }
+  hits.forEach(function(ht){ var ix=+ht.getAttribute('data-i');
+    ht.addEventListener('mouseenter',function(){show(ix);});
+    ht.addEventListener('mousemove',function(){show(ix);});
+    ht.addEventListener('click',function(){show(ix);});
+  });
+  svg.addEventListener('mouseleave',hide);
+}
+
+function showEmpty(msg){
+  $('view').innerHTML=''; var e=$('empty'); e.style.display='block';
+  e.innerHTML=msg||'<b>No player selected.</b><br>Search a name above, or open one from the leaderboard.';
+}
+
+/* picker events */
+$('q').addEventListener('change',function(){var k=keyForName(this.value);if(k)render(k);});
+$('q').addEventListener('keydown',function(e){if(e.key==='Enter'){var k=keyForName(this.value);if(k)render(k);else showEmpty('<b>No player by that name.</b><br>Check the spelling, or pick from the list.');}});
+
+/* ---- load ---- */
+function grab(name){
+  return fetch(name).then(function(r){if(!r.ok)throw 0;return r.json();})
+    .catch(function(){return fetch('https://raw.githubusercontent.com/filippospol/FPM/main/docs/leaderboard/'+name,{cache:'no-store'}).then(function(r){return r.json();});});
+}
+Promise.all([grab('../leaderboard/fpm.json'),grab('../leaderboard/teams.json')]).then(function(res){
+  META=res[0]||{};DATA=META.data||{};TEAMS=res[1]||{};
+  buildIndex();
+  var k=resolveParam();
+  if(!k){ // default landing: the top player of the current season
+    var top=(DATA[CUR]||[])[0]; if(top)k=keyOf(top);
+  }
+  if(k)render(k); else showEmpty();
+}).catch(function(){showEmpty('<b>Could not load the data.</b><br>Please try again in a moment.');});
+</script>
+<script src="../assets/site.js" data-json="../leaderboard/fpm.json"></script>
+</body>
+</html>
