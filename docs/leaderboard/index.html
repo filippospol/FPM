@@ -56,6 +56,10 @@ td.fpm{width:80px;padding:6px}
 .fpm .pc{display:block;font:400 9.5px var(--f-mono);color:var(--chip-sub);margin-top:3px}
 td .up{color:var(--pos-text)}
 td .dn{color:var(--neg-text)}
+/* compact offense/defense readout under the name, shown only when the O/D columns are hidden (narrow screens) */
+.od-sub{display:none;margin-top:4px;font:400 11.5px/1 var(--f-mono);color:var(--muted);letter-spacing:.02em}
+.od-sub .lbl{color:var(--faint)}
+.od-sub .sep{color:var(--faint);margin:0 7px}
 /* the note on the +- header: shows on hover, on a tap, or on keyboard focus */
 .tip{position:relative;display:inline-block;border-bottom:1px dotted var(--muted);cursor:help;outline:none}
 .tip-box{display:none;position:absolute;right:-8px;top:calc(100% + 10px);z-index:30;width:280px;padding:12px 14px;
@@ -77,6 +81,7 @@ table.show-se .se-col{display:table-cell}
   thead th{padding:14px 6px 10px}
   tbody td{padding:11px 6px}
   td.fpm{width:68px;padding:5px 4px}
+  .od-sub{display:block}   /* bring the offense/defense split back, folded under the name */
 }
 @media(max-width:430px){.c-pos{display:none}}
 </style>
@@ -197,7 +202,8 @@ function render(){
   for(var i=0;i<r.length;i++){var row=r[i],a=row.a;
     h+='<tr>'+
       '<td class="l rank">'+(showRank?rk[row.i]:'')+'</td>'+
-      '<td class="l player"><a href="../player/?p='+encodeURIComponent(keyOf(a))+'">'+nice(a[0])+'</a></td>'+
+      '<td class="l player"><a href="../player/?p='+encodeURIComponent(keyOf(a))+'">'+nice(a[0])+'</a>'+
+        '<span class="od-sub"><span class="lbl">O</span> '+od(a[8])+'<span class="sep">&middot;</span><span class="lbl">D</span> '+od(a[9])+'</span></td>'+
       '<td class="l team" title="'+(TEAMS[a[1]]||a[1])+'">'+a[1]+'</td>'+
       '<td class="l pos c-pos">'+a[2]+'</td>'+
       '<td class="l role c-role">'+(a[12]||'')+'</td>'+
