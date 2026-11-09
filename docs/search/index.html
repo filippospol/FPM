@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* apply a remembered theme before the page paints */try{var t=localStorage.getItem("fpm-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<title>FPM - Search</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<meta name="description" content="Search EuroLeague player-seasons by age, size, shooting and tempo-free rate stats, ranked by FPM. Every season since 2007-08.">
+<style>
+/* Page-specific styles. Tokens, masthead, nav, intro and footer live in ../assets/site.css. */
+
+/* filter bar */
+.filters{margin:26px 0 0;border:1px solid var(--rule);border-radius:var(--r);background:var(--panel);padding:18px 18px 20px}
+.frow{display:flex;flex-wrap:wrap;gap:18px 26px;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:7px}
+.fld>label{font:500 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+select,input{font:400 14px/1 var(--f-sans);color:var(--text);background:var(--bg);
+  border:1px solid var(--rule);border-radius:var(--r);padding:11px 12px}
+select:focus,input:focus{outline:1px solid var(--text);outline-offset:0}
+input[type=number]{width:92px}
+.mins{width:84px}
+
+/* dual-range slider */
+.dual{position:relative;width:210px;height:30px}
+.dual .track{position:absolute;left:2px;right:2px;top:13px;height:3px;background:var(--line-2);border-radius:2px}
+.dual .fill{position:absolute;top:13px;height:3px;background:var(--text);border-radius:2px}
+.dual input[type=range]{position:absolute;left:0;right:0;top:3px;width:100%;height:24px;margin:0;padding:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+.dual input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;pointer-events:auto;width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--text);cursor:pointer;margin-top:0}
+.dual input[type=range]::-moz-range-thumb{pointer-events:auto;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--text);cursor:pointer}
+.dual input[type=range]::-webkit-slider-runnable-track{background:none;height:24px}
+.dual input[type=range]::-moz-range-track{background:none}
+.dval{font:500 13px var(--f-mono);color:var(--text);letter-spacing:.02em}
+
+/* condition rows */
+.conds{margin:18px 0 0;display:flex;flex-direction:column;gap:10px}
+.cond{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cond .x{font:500 13px var(--f-mono);color:var(--muted);background:none;border:1px solid var(--rule);border-radius:var(--r);
+  width:34px;height:40px;cursor:pointer;line-height:1}
+.cond .x:hover{color:var(--text);border-color:var(--text)}
+.cond .unit{font:400 12.5px var(--f-mono);color:var(--faint)}
+.actions{margin:16px 0 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:500 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text);background:none;
+  border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;cursor:pointer}
+.btn:hover{background:var(--text);color:var(--bg)}
+.btn.ghost{border-color:var(--rule);color:var(--muted)}
+.btn.ghost:hover{background:none;color:var(--text);border-color:var(--text)}
+
+/* result meta */
+.meta{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:30px 0 2px}
+.meta .count{font:500 11.5px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.meta .note{font:400 12px var(--f-sans);color:var(--faint)}
+
+/* table, set straight on the page like the leaderboard */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;margin:8px 0 0;font-variant-numeric:tabular-nums}
+thead th{position:sticky;top:0;z-index:20;background:var(--bg);text-align:right;white-space:nowrap;cursor:pointer;
+  font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  padding:0 10px 12px;border-bottom:1px solid var(--line)}
+thead th.l{text-align:left}
+thead th:hover{color:var(--text)}
+thead th.on{color:var(--text)}
+thead th .ar{margin-left:5px;font-size:9px}
+tbody td{text-align:right;white-space:nowrap;padding:12px 10px;border-bottom:1px solid var(--line-2);font-size:14px;color:var(--sec)}
+tbody td.l{text-align:left}
+tbody td.rank{font:400 13px var(--f-mono);color:var(--faint);width:40px}
+tbody td.player{font:500 15px var(--f-sans);color:var(--text)}
+tbody td.player a{color:var(--text);text-decoration:none}
+tbody td.player a:hover{border-bottom:1px solid var(--rule)}
+tbody td.team,tbody td.pos,tbody td.seas{font:400 13px var(--f-sans);color:var(--muted)}
+tbody td .up{color:var(--pos-text)} tbody td .dn{color:var(--neg-text)}
+tbody td.adapt{color:var(--text)}                 /* the columns the search is filtering on */
+td.fpm{width:78px;padding:6px 10px}
+.fchip{display:inline-block;min-width:60px;text-align:center;border-radius:5px;padding:7px 8px}
+.fchip .v{font:500 14px/1 var(--f-mono);color:var(--chip-text)}
+/* offense/defense fold-under, shown only on narrow screens */
+.od-sub{display:none;margin-top:4px;font:400 11.5px/1 var(--f-mono);color:var(--muted);letter-spacing:.02em}
+.od-sub .lbl{color:var(--faint)} .od-sub .sep{color:var(--faint);margin:0 7px}
+.empty{display:none;padding:40px 4px;color:var(--muted);font-size:13px}
+.more{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:22px 0 0}
+
+@media(max-width:720px){
+  .filters{padding:16px 14px 18px}
+  .dual{width:170px}
+  .c-foldable{display:none}            /* age/ht/season drop into the name cell on phones */
+  .od-sub{display:block}
+}
+</style>
+</head>
+<body data-top>
+<div class="wrap">
+  <header class="mast">
+    <a class="brand" href="../">
+      <div class="row"><h1>FPM</h1><span class="exp">Fair Plus-Minus</span></div>
+      <div class="mark"></div>
+    </a>
+    <nav class="nav" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="../leaderboard/">Leaderboard</a>
+      <a href="./" aria-current="page">Search</a>
+      <a href="../player/">Players</a>
+      <a href="../about/">About</a>
+      <button class="theme" id="theme" type="button" aria-label="Switch between light and dark"><span class="on-light">Dark</span><span class="on-dark">Light</span></button>
+    </nav>
+  </header>
+
+  <div class="credit">
+    <span>Created by <a href="https://x.com/filippos_pol" target="_blank" rel="noopener">Filippos Polyzos</a></span>
+    <span id="updated"></span>
+  </div>
+
+  <p class="lede">Find the player-seasons that fit a shape: set an age and a height, add thresholds on
+    shooting and the tempo-free rate stats, and read the matches back ranked by <b>FPM</b>. Every
+    EuroLeague season since 2007-08. Rates are percentages, the way Torvik and Basketball-Reference show them.</p>
+  <div class="rule"></div>
+
+  <div class="filters">
+    <div class="frow">
+      <div class="fld"><label>Season</label><select id="season"></select></div>
+      <div class="fld"><label>Position</label>
+        <select id="pos"><option value="all">All</option><option>Guard</option><option>Wing</option><option>Forward</option><option>Big</option></select></div>
+      <div class="fld"><label>Age <span class="dval" id="ageLab"></span></label>
+        <div class="dual" id="ageDual"><div class="track"></div><div class="fill"></div><input type="range" class="lo"><input type="range" class="hi"></div></div>
+      <div class="fld"><label>Height <span class="dval" id="htLab"></span></label>
+        <div class="dual" id="htDual"><div class="track"></div><div class="fill"></div><input type="range" class="lo"><input type="range" class="hi"></div></div>
+      <div class="fld"><label>Min minutes</label><input type="number" class="mins" id="minMin" min="0" step="10" value="200"></div>
+    </div>
+
+    <div class="conds" id="conds"></div>
+
+    <div class="actions">
+      <button class="btn" id="add" type="button">+ Add filter</button>
+      <button class="btn ghost" id="clear" type="button">Clear</button>
+    </div>
+  </div>
+
+  <div class="meta"><span class="count" id="count"></span><span class="note" id="note"></span></div>
+  <div class="scroll">
+    <table id="tbl"><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table>
+    <div class="empty" id="empty">Loading the search data&hellip;</div>
+  </div>
+  <div class="more" id="more"></div>
+
+  <footer>
+    One row per qualifying player-season &middot; 2007-08 to 2026-27 &middot; minimum 400 possessions, 120 in
+    the current season &middot; rate stats are team-context percentages; percentage filters require a minimum
+    attempt rate.
+    <div class="by">Feedback: <a href="mailto:polyzos.filippos@gmail.com">polyzos.filippos@gmail.com</a></div>
+  </footer>
+</div>
+
+<script>
+var $=function(s){return document.getElementById(s)};
+var META={},ROWS=[],CI={},SEAS={},SEASLIST=[];
+var DEFAULT_LIMIT=50;
+var state={season:"all",pos:"all",minMin:200,ageLo:0,ageHi:0,htLo:0,htHi:0,conds:[],sortKey:"fpm",sortDir:-1,limit:DEFAULT_LIMIT};
+var AGE_B=[16,45], HT_B=[175,225];
+
+/* stat registry: key -> {label, group, kind, dp, gate}. gate = attempts column for % filters. */
+var STAT=[
+  {k:"ts",label:"TS%",g:"Efficiency",kind:"pct",dp:1,gate:null},
+  {k:"efg",label:"eFG%",g:"Efficiency",kind:"pct",dp:1,gate:null},
+  {k:"p3",label:"3P%",g:"Efficiency",kind:"pct",dp:1,gate:"fg3a"},
+  {k:"p2",label:"2P%",g:"Efficiency",kind:"pct",dp:1,gate:"fg2a"},
+  {k:"ft",label:"FT%",g:"Efficiency",kind:"pct",dp:1,gate:"fta"},
+  {k:"usg",label:"USG%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"orb",label:"ORB%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"drb",label:"DRB%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"reb",label:"REB%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"ast",label:"AST%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"tov",label:"TOV%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"stl",label:"STL%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"blk",label:"BLK%",g:"Rate",kind:"pct",dp:1,gate:null},
+  {k:"fpm",label:"FPM",g:"Impact",kind:"num",dp:1,gate:null},
+  {k:"o",label:"O-FPM",g:"Impact",kind:"num",dp:1,gate:null},
+  {k:"d",label:"D-FPM",g:"Impact",kind:"num",dp:1,gate:null},
+  {k:"pts100",label:"PTS/100",g:"Scoring",kind:"num",dp:1,gate:null},
+  {k:"min",label:"Min",g:"Playing time",kind:"num",dp:0,gate:null},
+  {k:"poss",label:"Poss",g:"Playing time",kind:"num",dp:0,gate:null},
+  {k:"gp",label:"GP",g:"Playing time",kind:"num",dp:0,gate:null}
+];
+var SMAP={}; STAT.forEach(function(s){SMAP[s.k]=s;});
+var GATE_PER100={fg3a:1.5, fg2a:3.0, fta:1.5};   /* minimum attempts per 100 poss for a % filter to count */
+
+function val(r,k){ var i=CI[k]; return i==null?null:r[i]; }
+function ftin(cm){ if(cm==null) return "—"; var inch=cm/2.54, ft=Math.floor(inch/12), I=Math.round(inch-ft*12); if(I===12){ft++;I=0;} return ft+"'"+I+'"'; }
+function sgn(v,dp){ return (v>=0?"+":"")+v.toFixed(dp); }
+function fmt(k,v){ if(v==null||!isFinite(v)) return "—"; var s=SMAP[k];
+  if(k==="fpm"||k==="o"||k==="d") return sgn(v,1);
+  return v.toFixed(s?s.dp:1); }
+
+/* ---------- dual-range slider ---------- */
+function makeDual(id,bnd,fmtLab,onDone){
+  var el=$(id),lo=el.querySelector(".lo"),hi=el.querySelector(".hi"),fill=el.querySelector(".fill");
+  var lab=$(id==="ageDual"?"ageLab":"htLab"), gap=1;
+  [lo,hi].forEach(function(r){r.min=bnd[0];r.max=bnd[1];r.step=1;});
+  lo.value=bnd[0];hi.value=bnd[1];
+  function paint(){ var a=+lo.value,b=+hi.value;
+    var p0=(a-bnd[0])/(bnd[1]-bnd[0])*100, p1=(b-bnd[0])/(bnd[1]-bnd[0])*100;
+    fill.style.left=p0+"%";fill.style.width=(p1-p0)+"%"; lab.textContent=fmtLab(a,b); }
+  function clamp(which){ var a=+lo.value,b=+hi.value;
+    if(which==="lo"&&a>b-gap) lo.value=Math.max(bnd[0],b-gap);
+    if(which==="hi"&&b<a+gap) hi.value=Math.min(bnd[1],a+gap); paint(); }
+  lo.addEventListener("input",function(){clamp("lo");}); hi.addEventListener("input",function(){clamp("hi");});
+  lo.addEventListener("change",onDone); hi.addEventListener("change",onDone);
+  el._get=function(){return [+lo.value,+hi.value];};
+  el._set=function(a,b){lo.value=a;hi.value=b;paint();};
+  paint();
+}
+
+/* ---------- condition rows ---------- */
+function statOptions(sel){
+  var groups={},order=[];
+  STAT.forEach(function(s){ if(!groups[s.g]){groups[s.g]=[];order.push(s.g);} groups[s.g].push(s); });
+  var h="";
+  order.forEach(function(g){ h+='<optgroup label="'+g+'">';
+    groups[g].forEach(function(s){ h+='<option value="'+s.k+'"'+(s.k===sel?' selected':'')+'>'+s.label+'</option>'; });
+    h+='</optgroup>'; });
+  return h;
+}
+function renderConds(){
+  var box=$("conds"); box.innerHTML="";
+  state.conds.forEach(function(c,idx){
+    var row=document.createElement("div"); row.className="cond";
+    row.innerHTML='<select class="cstat">'+statOptions(c.stat)+'</select>'
+      +'<select class="cop"><option value="ge"'+(c.op==="ge"?" selected":"")+'>&ge;</option><option value="le"'+(c.op==="le"?" selected":"")+'>&le;</option></select>'
+      +'<input type="number" class="cval" step="0.1" value="'+(c.val==null?"":c.val)+'" placeholder="value">'
+      +'<span class="unit">'+(SMAP[c.stat].kind==="pct"?"%":"")+'</span>'
+      +'<button class="x" type="button" title="Remove">&times;</button>';
+    row.querySelector(".cstat").addEventListener("change",function(){c.stat=this.value;renderConds();apply();});
+    row.querySelector(".cop").addEventListener("change",function(){c.op=this.value;apply();});
+    row.querySelector(".cval").addEventListener("input",function(){c.val=this.value===""?null:parseFloat(this.value);apply();});
+    row.querySelector(".x").addEventListener("click",function(){state.conds.splice(idx,1);renderConds();apply();});
+    box.appendChild(row);
+  });
+}
+
+/* ---------- filtering ---------- */
+function passes(r){
+  if(state.season!=="all" && val(r,"season")!==state.season) return false;
+  if(state.pos!=="all" && val(r,"pos")!==state.pos) return false;
+  var mn=val(r,"min"); if(mn!=null && mn<state.minMin) return false;
+  var ag=val(r,"age");
+  if(state.ageLo>AGE_B[0] || state.ageHi<AGE_B[1]){ if(ag==null||ag<state.ageLo||ag>state.ageHi) return false; }
+  var ht=val(r,"ht");
+  if(state.htLo>HT_B[0] || state.htHi<HT_B[1]){ if(ht==null||ht<state.htLo||ht>state.htHi) return false; }
+  for(var i=0;i<state.conds.length;i++){ var c=state.conds[i]; if(c.val==null) continue;
+    var v=val(r,c.stat); if(v==null||!isFinite(v)) return false;
+    if(c.op==="ge" && !(v>=c.val)) return false;
+    if(c.op==="le" && !(v<=c.val)) return false;
+    var s=SMAP[c.stat];
+    if(s.gate){ var att=val(r,s.gate),poss=val(r,"poss");
+      if(att==null||poss==null||poss<=0) return false;
+      if(100*att/poss < GATE_PER100[s.gate]) return false; }
+  }
+  return true;
+}
+
+/* ---------- columns ---------- */
+function activeCols(){
+  var base=["rank","name","team","pos","age","ht"];
+  if(state.season==="all") base.push("season");
+  base.push("fpm","o","d");
+  var extra=[], used={fpm:1,o:1,d:1};
+  state.conds.forEach(function(c){ if(c.val!=null && !used[c.stat] && SMAP[c.stat]){ used[c.stat]=1; extra.push(c.stat); } });
+  if(!extra.length) extra=["ts","usg","reb","ast"];
+  return {cols:base.concat(extra), adapt:extra.reduce(function(a,k){a[k]=1;return a;},{})};
+}
+var COLLAB={rank:"#",name:"Player",team:"Team",pos:"Pos",age:"Age",ht:"Ht",season:"Season"};
+function colLabel(k){ return COLLAB[k]||(SMAP[k]?SMAP[k].label:k); }
+function colClass(k){ return (k==="name"||k==="team"||k==="pos"||k==="season")?"l":""; }
+
+/* ---------- render ---------- */
+function heat(v){ var t=Math.max(-1,Math.min(1,v/6)),a=Math.abs(t),pos=t>=0;
+  var c=getComputedStyle(document.documentElement).getPropertyValue(pos?"--pos":"--neg").trim();
+  return "background:rgba("+c+","+(0.18+0.66*a).toFixed(3)+")"; }
+
+function render(){
+  var rows=ROWS.filter(passes);
+  var k=state.sortKey,dir=state.sortDir;
+  rows.sort(function(x,y){
+    if(k==="name"){ var a=(val(x,"name")||""),b=(val(y,"name")||""); return a<b?-dir:a>b?dir:0; }
+    var a=val(x,k),b=val(y,k); var an=(a==null||!isFinite(a)),bn=(b==null||!isFinite(b));
+    if(an&&bn) return 0; if(an) return 1; if(bn) return -1;   /* nulls to the bottom */
+    return a<b?-dir:a>b?dir:0;
+  });
+  var A=activeCols(), cols=A.cols;
+  // head
+  var hh="";
+  cols.forEach(function(c){ if(c==="rank"){ hh+='<th class="l rankh">#</th>'; return; }
+    var on=(c===k), fold=(c==="age"||c==="ht"||c==="season")?" c-foldable":"";
+    hh+='<th class="'+colClass(c)+fold+(on?" on":"")+'" data-k="'+c+'">'+colLabel(c)+(on?'<span class="ar">'+(dir===-1?"▼":"▲")+'</span>':'')+'</th>'; });
+  $("head").innerHTML=hh;
+  // body (paged: render only the first state.limit rows)
+  var total=rows.length, shown=rows.slice(0,state.limit);
+  var out=[];
+  for(var i=0;i<shown.length;i++){ var r=shown[i],tr="<tr>";
+    for(var j=0;j<cols.length;j++){ var c=cols[j];
+      if(c==="rank"){ tr+='<td class="rank">'+(i+1)+'</td>'; continue; }
+      if(c==="name"){ var pid=val(r,"pid"),nm=val(r,"name");
+        var sub='<span class="od-sub"><span class="lbl">O</span> '+fmt("o",val(r,"o"))+'<span class="sep">&middot;</span><span class="lbl">D</span> '+fmt("d",val(r,"d"))+'</span>';
+        tr+='<td class="l player"><a href="../player/?p='+encodeURIComponent("id:"+pid)+'">'+nm+'</a>'+sub+'</td>'; continue; }
+      if(c==="team"){ tr+='<td class="l team">'+val(r,"team")+'</td>'; continue; }
+      if(c==="pos"){ tr+='<td class="l pos c-foldable">'+(val(r,"pos")||"")+'</td>'; continue; }
+      if(c==="season"){ tr+='<td class="l seas c-foldable">'+(SEAS[val(r,"season")]||val(r,"season"))+'</td>'; continue; }
+      if(c==="age"){ tr+='<td class="c-foldable">'+(val(r,"age")!=null?val(r,"age").toFixed(1):"—")+'</td>'; continue; }
+      if(c==="ht"){ tr+='<td class="c-foldable">'+ftin(val(r,"ht"))+'</td>'; continue; }
+      if(c==="fpm"){ var v=val(r,"fpm"); tr+='<td class="fpm"><span class="fchip" style="'+heat(+v)+'"><span class="v">'+sgn(+v,1)+'</span></span></td>'; continue; }
+      if(c==="o"||c==="d"){ var vv=val(r,c),cl=vv>0?"up":(vv<0?"dn":""); tr+='<td><span class="'+cl+'">'+fmt(c,vv)+'</span></td>'; continue; }
+      // stat column
+      var sv=val(r,c); tr+='<td'+(A.adapt[c]?' class="adapt"':'')+'>'+fmt(c,sv)+'</td>';
+    }
+    out.push(tr+"</tr>");
+  }
+  $("body").innerHTML=out.join("");
+  $("empty").style.display=total?"none":"block";
+  if(!total) $("empty").textContent="No player-seasons match these filters.";
+  $("count").textContent=total+" player-season"+(total===1?"":"s");
+  $("note").textContent=shown.length<total?("showing "+shown.length):"";
+  var more=$("more");
+  if(shown.length<total){
+    more.innerHTML='<button class="btn ghost" id="moreBtn" type="button">Show '+Math.min(DEFAULT_LIMIT,total-shown.length)+' more</button>'
+      +'<button class="btn ghost" id="allBtn" type="button">Show all ('+total+')</button>';
+    $("moreBtn").addEventListener("click",function(){state.limit+=DEFAULT_LIMIT;render();});
+    $("allBtn").addEventListener("click",function(){state.limit=total;render();});
+  } else more.innerHTML="";
+  // header sort handlers
+  var ths=$("head").querySelectorAll("th[data-k]");
+  for(var t=0;t<ths.length;t++){ ths[t].addEventListener("click",function(){ var key=this.getAttribute("data-k");
+    if(key==="rank") return;
+    if(state.sortKey===key) state.sortDir*=-1; else { state.sortKey=key; state.sortDir=(key==="name")?1:-1; }
+    syncURL(); render(); }); }
+}
+
+function apply(){ state.season=$("season").value; state.pos=$("pos").value;
+  state.minMin=parseFloat($("minMin").value)||0;
+  var a=$("ageDual")._get(); state.ageLo=a[0]; state.ageHi=a[1];
+  var h=$("htDual")._get(); state.htLo=h[0]; state.htHi=h[1];
+  state.limit=DEFAULT_LIMIT;                      /* a changed filter starts the list from the top */
+  syncURL(); render(); }
+
+/* ---------- URL state (shareable) ---------- */
+function syncURL(){
+  try{ var q=[];
+    if(state.season!=="all") q.push("s="+encodeURIComponent(state.season));
+    if(state.pos!=="all") q.push("pos="+encodeURIComponent(state.pos));
+    if(state.minMin!==200) q.push("min="+state.minMin);
+    if(state.ageLo>AGE_B[0]||state.ageHi<AGE_B[1]) q.push("age="+state.ageLo+"-"+state.ageHi);
+    if(state.htLo>HT_B[0]||state.htHi<HT_B[1]) q.push("ht="+state.htLo+"-"+state.htHi);
+    var cs=state.conds.filter(function(c){return c.val!=null;}).map(function(c){return c.stat+":"+c.op+":"+c.val;});
+    if(cs.length) q.push("c="+encodeURIComponent(cs.join(";")));
+    if(!(state.sortKey==="fpm"&&state.sortDir===-1)) q.push("sort="+state.sortKey+":"+state.sortDir);
+    history.replaceState(null,"", location.pathname+(q.length?"?"+q.join("&"):""));
+  }catch(e){}
+}
+function readURL(){
+  try{ var p=new URLSearchParams(location.search);
+    if(p.get("s")) state.season=p.get("s");
+    if(p.get("pos")) state.pos=p.get("pos");
+    if(p.get("min")!=null) state.minMin=parseFloat(p.get("min"));
+    if(p.get("age")){ var a=p.get("age").split("-"); state.ageLo=+a[0]; state.ageHi=+a[1]; }
+    if(p.get("ht")){ var h=p.get("ht").split("-"); state.htLo=+h[0]; state.htHi=+h[1]; }
+    if(p.get("c")) state.conds=p.get("c").split(";").map(function(t){var x=t.split(":");return {stat:x[0],op:x[1],val:parseFloat(x[2])};}).filter(function(c){return SMAP[c.stat];});
+    if(p.get("sort")){ var s=p.get("sort").split(":"); state.sortKey=s[0]; state.sortDir=parseInt(s[1],10)||-1; }
+  }catch(e){}
+}
+
+/* ---------- boot ---------- */
+function grab(name){
+  return fetch(name).then(function(r){if(!r.ok)throw 0;return r.json();})
+    .catch(function(){return fetch("https://raw.githubusercontent.com/filippospol/FPM/main/docs/leaderboard/"+name.replace(/^.*\//,""),{cache:"no-store"}).then(function(r){return r.json();});});
+}
+function boot(){
+  ROWS=META.rows||[];
+  (META.cols||[]).forEach(function(c,i){CI[c]=i;});
+  SEASLIST=(META.seasons||[]).slice();
+  SEASLIST.forEach(function(s){SEAS[s.code]=s.label;});
+  // age / height bounds from the data
+  var ages=[],hts=[];
+  ROWS.forEach(function(r){ var a=val(r,"age"); if(a!=null&&isFinite(a))ages.push(a); var h=val(r,"ht"); if(h!=null&&isFinite(h))hts.push(h); });
+  if(ages.length){ AGE_B=[Math.floor(Math.min.apply(null,ages)), Math.ceil(Math.max.apply(null,ages))]; }
+  if(hts.length){ HT_B=[Math.floor(Math.min.apply(null,hts)), Math.ceil(Math.max.apply(null,hts))]; }
+  // season dropdown
+  var ss='<option value="all">All seasons</option>';
+  for(var i=SEASLIST.length-1;i>=0;i--) ss+='<option value="'+SEASLIST[i].code+'">'+SEASLIST[i].label+'</option>';
+  $("season").innerHTML=ss;
+  // defaults, then URL overrides
+  state.ageLo=AGE_B[0];state.ageHi=AGE_B[1];state.htLo=HT_B[0];state.htHi=HT_B[1];
+  readURL();
+  makeDual("ageDual",AGE_B,function(a,b){return a+" – "+b;},apply);
+  makeDual("htDual",HT_B,function(a,b){return ftin(a)+" – "+ftin(b);},apply);
+  $("ageDual")._set(state.ageLo,state.ageHi); $("htDual")._set(state.htLo,state.htHi);
+  $("season").value=state.season; $("pos").value=state.pos; $("minMin").value=state.minMin;
+  // wire controls
+  $("season").addEventListener("change",apply); $("pos").addEventListener("change",apply); $("minMin").addEventListener("input",apply);
+  $("add").addEventListener("click",function(){state.conds.push({stat:"ts",op:"ge",val:null});renderConds();});
+  $("clear").addEventListener("click",function(){state.conds=[];$("pos").value="all";$("minMin").value=200;$("ageDual")._set(AGE_B[0],AGE_B[1]);$("htDual")._set(HT_B[0],HT_B[1]);renderConds();apply();});
+  renderConds(); render();
+}
+grab("../leaderboard/search.json").then(function(m){META=m;boot();})
+  .catch(function(){var e=$("empty");e.style.display="block";e.textContent="Could not load the search data.";});
+</script>
+<script src="../assets/site.js" data-json="../leaderboard/search.json"></script>
+</body>
+</html>
