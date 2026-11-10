@@ -217,10 +217,26 @@ function flattenSeries(series){
   return {g:g,v:v,m:m,seas:seas,bounds:bounds,n:gi};
 }
 
+/* Re-anchor the smoothed line per season. The dots are already anchored so each season's
+   minute-weighted mean equals that season's published FPM; a single Gaussian smooth across the
+   whole career bleeds across season boundaries and, for a short season, gets swamped by its
+   neighbour (the line stops matching the season level and the table below it). Block-shift each
+   season's slice of the line so its minute-weighted mean matches the season's anchored mean. */
+function reanchorLine(s,line){
+  var out=line.slice();
+  s.bounds.forEach(function(b,ix){
+    var a=b.si, z=(ix<s.bounds.length-1?s.bounds[ix+1].si:s.n);
+    var tn=0,ln=0,td=0;
+    for(var i=a;i<z;i++){ tn+=s.v[i]*s.m[i]; ln+=line[i]*s.m[i]; td+=s.m[i]; }
+    if(td>0){ var off=(tn-ln)/td; for(var i2=a;i2<z;i2++) out[i2]=line[i2]+off; }
+  });
+  return out;
+}
+
 /* ---- the career trajectory chart (inline SVG) ---- */
 function drawTrajectory(p){
   var s=flattenSeries(p.series); if(s.n<2) return null;
-  var dots=ewma(s.v,DOT_BETA), line=gsmooth(s.g,dots,s.m,LINE_BW);
+  var dots=ewma(s.v,DOT_BETA), line=reanchorLine(s,gsmooth(s.g,dots,s.m,LINE_BW));
   var W=920,H=360,PADL=40,PADR=16,PADT=22,PADB=34;
   // y-domain: cover the band (2nd..98th pct of the dots) and the line, always including 0
   var lo=Math.min(quant(dots,0.02),Math.min.apply(null,line),0),
@@ -245,9 +261,12 @@ function drawTrajectory(p){
   // per-game dots (the band), skipping any that fall outside the domain
   for(var i=0;i<s.n;i++){ var dv=dots[i]; if(dv<lo||dv>hi) continue;
     g+='<circle class="gdot" cx="'+X(s.g[i]).toFixed(1)+'" cy="'+Y(dv).toFixed(1)+'" r="2.6" fill="'+heatFill(s.v[i])+'"/>'; }
-  // the smooth line
-  var d=line.map(function(y,i){return (i?'L':'M')+X(s.g[i]).toFixed(1)+' '+Y(y).toFixed(1);}).join(' ');
-  g+='<path class="fline" d="'+d+'"/>';
+  // the smooth line, one segment per season so a season-to-season level change reads as a step
+  // at the divider rather than a diagonal slash across it
+  s.bounds.forEach(function(b,ix){ var a=b.si, z=(ix<s.bounds.length-1?s.bounds[ix+1].si:s.n);
+    if(z-a<2) return; var seg='';
+    for(var i=a;i<z;i++){ seg+=(i===a?'M':'L')+X(s.g[i]).toFixed(1)+' '+Y(line[i]).toFixed(1); }
+    g+='<path class="fline" d="'+seg+'"/>'; });
   // hover layer
   g+='<circle id="hd" class="hoverdot" r="4"/><line id="cx" class="cross" y1="'+PADT+'" y2="'+(H-PADB)+'"/>';
   g+='<rect id="hit" x="'+PADL+'" y="'+PADT+'" width="'+(W-PADL-PADR)+'" height="'+(H-PADT-PADB)+'" fill="transparent"/>';
