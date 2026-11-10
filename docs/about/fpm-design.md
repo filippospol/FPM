@@ -114,6 +114,7 @@ next to the project it belongs to. A short list of surveys closes the section.
 - **FiveThirtyEight (RAPTOR).** A box/tracking and on-off blend. https://fivethirtyeight.com/methodology/how-our-raptor-metric-works/
 - **Medvedovsky, K. & Patton, A. (DARKO).** A daily-updating talent model with aging built in. https://kmedved.com/
 - **LUMA (court-share).** A possession-level, shot-aware model; the reference for the expected-points version that was tried and dropped. https://court-share.com/luma
+- **mof (@yim0e), PULSE (2026).** A Bayesian prior-informed RAPM for the NBA: a box-score prior trained walk-forward on a career RAPM target, cross-fit by player, with a REML-tuned lineup update on the points-per-100 scale. An independent build that converged on the same architecture as FPM, down to leaning the prior harder on offense than defense, and split into a retrospective season rating and a forward expected-impact number. https://x.com/yim0e
 
 ### Prior, stabilization, luck and aging
 
