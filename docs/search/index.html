@@ -309,7 +309,7 @@ function render(){
         var sub='<span class="od-sub"><span class="lbl">O</span> '+fmt("o",val(r,"o"))+'<span class="sep">&middot;</span><span class="lbl">D</span> '+fmt("d",val(r,"d"))+'</span>';
         tr+='<td class="l player"><a href="../player/?p='+encodeURIComponent("id:"+pid)+'">'+nm+'</a>'+sub+'</td>'; continue; }
       if(c==="team"){ tr+='<td class="l team">'+val(r,"team")+'</td>'; continue; }
-      if(c==="pos"){ tr+='<td class="l pos c-foldable">'+(val(r,"pos")||"")+'</td>'; continue; }
+      if(c==="pos"){ tr+='<td class="l pos">'+(val(r,"pos")||"")+'</td>'; continue; }
       if(c==="season"){ tr+='<td class="l seas c-foldable">'+(SEAS[val(r,"season")]||val(r,"season"))+'</td>'; continue; }
       if(c==="age"){ tr+='<td class="c-foldable">'+(val(r,"age")!=null?val(r,"age").toFixed(1):"—")+'</td>'; continue; }
       if(c==="ht"){ tr+='<td class="c-foldable">'+ftin(val(r,"ht"))+'</td>'; continue; }
