@@ -78,6 +78,21 @@
 .cadd input:focus{outline:1px solid var(--text);outline-offset:0}
 .cadd .menu{top:calc(100% + 5px)}
 
+/* side-by-side comparison cards: a column per player on wide screens, stacked on a phone */
+.cmp-wrap{margin-top:40px;padding-top:30px;border-top:1px solid var(--rule)}
+.cmp-ttl{font:400 22px/1 var(--f-serif);color:var(--text);margin:0 0 16px}
+.cmp-cards{display:flex;flex-wrap:wrap;gap:14px}
+.pcard{flex:1 1 230px;min-width:210px;border:1px solid var(--line-2);border-radius:var(--r);padding:16px 16px 14px;background:var(--panel)}
+.pcard-h{display:flex;align-items:center;gap:9px;font:500 16px var(--f-sans);color:var(--text)}
+.pcard-h .sw{width:14px;height:3px;border-radius:2px;flex:none}
+.pcard-sub{margin:7px 0 0;font:400 11px var(--f-mono);letter-spacing:.02em;color:var(--muted)}
+.pcard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:16px}
+.pc{display:flex;flex-direction:column;gap:5px}
+.pc .pk{font:500 9.5px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pc .pv{font:400 21px/1 var(--f-mono);font-variant-numeric:tabular-nums;color:var(--text)}
+.pc .pv .up{color:var(--pos-text)}.pc .pv .dn{color:var(--neg-text)}
+.pc .pv small{display:block;margin-top:4px;font-size:10.5px;color:var(--muted)}
+
 /* season table, same ledger treatment as the leaderboard */
 .scroll{margin-top:34px}
 table{width:100%;border-collapse:separate;border-spacing:0}
@@ -310,7 +325,7 @@ function render(k){
   COMPARE.forEach(function(ck){ var cp=ALL[ck]; players.push({name:cp.name,key:ck,series:(cp.pid?GAMES[cp.pid]:null)}); });
   var ch=p.series?drawChart(players):null;
   var note=players.length>1?'aligned by game number':'career, game by game';
-  var chartHtml=ch?('<div class="chart-h"><h3>FPM by game</h3><span class="note">'+note+'</span></div>'+buildCmp(players)+ch.svg+'<div class="tip" id="tip"></div>')
+  var chartHtml=ch?('<div class="chart-h"><h3>FPM by game</h3><span class="note">'+note+'</span></div>'+ch.svg+'<div class="tip" id="tip"></div>')
                  :'<div class="chart-h"><h3>FPM by game</h3></div><div class="status" style="color:var(--muted);padding:30px 0;font-size:13px">No game-by-game data for this player yet.</div>';
 
   var h=''
@@ -321,6 +336,8 @@ function render(k){
     +'    <span>'+teams.map(esc).join(' · ')+'</span>'
     +'  </div>'
     +'</div>'
+
+    +buildCmp(players)
 
     +'<div class="stat-row">'
     +'  <div class="stat"><div class="k">Latest</div><div class="v">'+val(last.fpm)+'<small>'+last.label+'</small></div></div>'
@@ -349,6 +366,7 @@ function render(k){
       +'<td>'+od(r.o)+'</td><td>'+od(r.d)+'</td></tr>';
   }
   h+='</tbody></table></div>';
+  h+=buildCompare([k].concat(COMPARE));
   $('view').innerHTML=h;
   wireCompare(k);
   if(ch) wireHover(ch);
@@ -362,8 +380,39 @@ function buildCmp(players){
     var rm=(i>0)?'<button class="cx-rm" type="button" title="Remove" data-k="'+encodeURIComponent(pl.key)+'">&times;</button>':'';
     return '<span class="cchip"><span class="sw" style="background:'+(LINE_COLORS[i]||'var(--muted)')+'"></span>'+esc(nice(pl.name))+rm+'</span>';
   }).join('');
-  var add=(COMPARE.length<2)?'<span class="cadd"><input id="q2" type="text" placeholder="+ compare player" autocomplete="off" spellcheck="false" aria-label="Add a player to compare"><ul class="menu" id="menu2" role="listbox"></ul></span>':'';
+  var add=(COMPARE.length<2)?'<span class="cadd"><input id="q2" type="text" placeholder="+ add player to compare" autocomplete="off" spellcheck="false" aria-label="Add a player to compare"><ul class="menu" id="menu2" role="listbox"></ul></span>':'';
   return '<div class="cmp">'+chips+add+'</div>';
+}
+
+/* ---- side-by-side comparison: one card per player, laid out in columns on wide, stacked on phone ---- */
+function summarize(key){
+  var pl=ALL[key]; if(!pl||!pl.rows||!pl.rows.length) return null;
+  var rows=pl.rows,n=rows.length,last=rows[n-1];
+  var peak=rows.reduce(function(a,b){return b.fpm>a.fpm?b:a;},rows[0]);
+  var bestO=rows.reduce(function(a,b){return b.o>a.o?b:a;},rows[0]);
+  var bestD=rows.reduce(function(a,b){return b.d>a.d?b:a;},rows[0]);
+  var teams=[];rows.forEach(function(r){if(teams[teams.length-1]!==r.team)teams.push(r.team);});
+  return {name:pl.name,n:n,span:rows[0].label+' to '+last.label,teams:teams,last:last,peak:peak,bestO:bestO,bestD:bestD};
+}
+function statCell(lab,v,sub){
+  return '<div class="pc"><span class="pk">'+lab+'</span><span class="pv">'+val(v)+(sub?'<small>'+sub+'</small>':'')+'</span></div>';
+}
+function buildCompare(keys){
+  if(!keys||keys.length<2) return '';
+  var cards=keys.map(function(k,i){
+    var su=summarize(k); if(!su) return '';
+    var col=LINE_COLORS[i]||'var(--muted)';
+    return '<div class="pcard">'
+      +'<div class="pcard-h"><span class="sw" style="background:'+col+'"></span>'+esc(nice(su.name))+'</div>'
+      +'<div class="pcard-sub">'+su.span+' · '+su.n+' season'+(su.n>1?'s':'')+' · '+su.teams.map(esc).join(' · ')+'</div>'
+      +'<div class="pcard-grid">'
+      +statCell('Latest',su.last.fpm,su.last.label)
+      +statCell('Peak',su.peak.fpm,su.peak.label)
+      +statCell('Best offense',su.bestO.o,su.bestO.label)
+      +statCell('Best defense',su.bestD.d,su.bestD.label)
+      +'</div></div>';
+  }).join('');
+  return '<div class="cmp-wrap"><h3 class="cmp-ttl">Side by side</h3><div class="cmp-cards">'+cards+'</div></div>';
 }
 function wireCompare(primaryKey){
   var rms=document.querySelectorAll('.cx-rm');
