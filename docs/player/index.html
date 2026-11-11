@@ -66,6 +66,18 @@
 .tip b{color:var(--text);font-weight:600;font-family:var(--f-mono)}
 .tip .up{color:var(--pos-text)}.tip .dn{color:var(--neg-text)}
 
+/* compare bar: a legend of the plotted players + a box to add up to two more */
+.cmp{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:2px 0 10px}
+.cchip{display:inline-flex;align-items:center;gap:7px;font:500 12.5px var(--f-sans);color:var(--text)}
+.cchip .sw{width:12px;height:3px;border-radius:2px;display:inline-block}
+.cchip .cx-rm{margin-left:1px;font:500 14px/1 var(--f-mono);color:var(--muted);background:none;border:0;cursor:pointer;padding:0 2px}
+.cchip .cx-rm:hover{color:var(--text)}
+.cadd{position:relative;min-width:190px;flex:0 1 220px}
+.cadd input{width:100%;font:400 13px/1 var(--f-sans);color:var(--text);background:var(--panel);border:1px solid var(--rule);border-radius:var(--r);padding:9px 11px}
+.cadd input::placeholder{color:var(--faint)}
+.cadd input:focus{outline:1px solid var(--text);outline-offset:0}
+.cadd .menu{top:calc(100% + 5px)}
+
 /* season table, same ledger treatment as the leaderboard */
 .scroll{margin-top:34px}
 table{width:100%;border-collapse:separate;border-spacing:0}
@@ -118,7 +130,7 @@ td.fpm{width:78px;padding:6px}
 
   <p class="lede">A single player's <b>FPM</b> across his whole career, game by game. Each season sits at
     that season's FPM; the movement within a season is his form. Search a name, or open a player from the
-    <a href="../leaderboard/">leaderboard</a>.</p>
+    <a href="../leaderboard/">leaderboard</a>, then add up to two more players to compare their careers.</p>
 
   <div class="pick">
     <input id="q" type="text" placeholder="Search a player" autocomplete="off" spellcheck="false"
@@ -202,10 +214,13 @@ function resolveParam(){
 function ewma(arr,beta){var o=[],num=0,den=0;for(var i=0;i<arr.length;i++){num=beta*num+arr[i];den=beta*den+1;o.push(num/den);}return o;}
 function gsmooth(x,y,w,bw){var o=[],n=x.length;for(var i=0;i<n;i++){var sn=0,sd=0;for(var j=0;j<n;j++){var g=Math.exp(-0.5*Math.pow((x[j]-x[i])/bw,2))*w[j];sn+=g*y[j];sd+=g;}o.push(sd>0?sn/sd:y[i]);}return o;}
 function quant(a,q){var s=a.slice().sort(function(m,n){return m-n;});var i=Math.max(0,Math.min(s.length-1,Math.floor(q*(s.length-1))));return s[i];}
+function wmean(v,w,a,z){a=a||0;z=(z==null?v.length:z);var s=0,t=0;for(var i=a;i<z;i++){s+=v[i]*w[i];t+=w[i];}return t?s/t:0;}
 
-/* the DARKO-style look: a lightly-stabilised per-game band (DOT_BETA) and a smooth line that
-   follows it (LINE_BW, in games). Both are display dials; the data is already anchored to FPM. */
-var DOT_BETA=0.92, LINE_BW=11;
+/* DARKO-style: a per-game band (DOT_BETA), re-centred per season onto that season's FPM so the dot
+   levels are right, then ONE continuous Gaussian smooth (LINE_BW, in games). The x-axis is the
+   career game number, so several players overlay and compare directly, game for game. */
+var DOT_BETA=0.92, LINE_BW=8;
+var LINE_COLORS=['var(--text)','var(--pos-text)','var(--neg-text)'];
 
 /* flatten a player's game series (from games.json) into one career sequence */
 function flattenSeries(series){
@@ -217,61 +232,62 @@ function flattenSeries(series){
   return {g:g,v:v,m:m,seas:seas,bounds:bounds,n:gi};
 }
 
-/* Re-anchor the smoothed line per season. The dots are already anchored so each season's
-   minute-weighted mean equals that season's published FPM; a single Gaussian smooth across the
-   whole career bleeds across season boundaries and, for a short season, gets swamped by its
-   neighbour (the line stops matching the season level and the table below it). Block-shift each
-   season's slice of the line so its minute-weighted mean matches the season's anchored mean. */
-function reanchorLine(s,line){
-  var out=line.slice();
-  s.bounds.forEach(function(b,ix){
-    var a=b.si, z=(ix<s.bounds.length-1?s.bounds[ix+1].si:s.n);
-    var tn=0,ln=0,td=0;
-    for(var i=a;i<z;i++){ tn+=s.v[i]*s.m[i]; ln+=line[i]*s.m[i]; td+=s.m[i]; }
-    if(td>0){ var off=(tn-ln)/td; for(var i2=a;i2<z;i2++) out[i2]=line[i2]+off; }
-  });
-  return out;
+/* per-player plotted series: calendar x (season index + position in season), per-season-anchored
+   dots, and one continuous smooth line over calendar time */
+function playerSeries(series){
+  var s=flattenSeries(series); if(s.n<2) return null;
+  var x=s.g.slice();                                  // career game number, 1..N
+  var dots=ewma(s.v,DOT_BETA);
+  // re-centre each season's EWMA dots onto its FPM (the minute-weighted mean of the anchored values),
+  // so a short recent season isn't dragged up by the previous one's momentum
+  var da=dots.slice();
+  s.bounds.forEach(function(b,ix){ var a=b.si, z=(ix<s.bounds.length-1?s.bounds[ix+1].si:s.n);
+    var off=wmean(s.v,s.m,a,z)-wmean(dots,s.m,a,z); for(var i=a;i<z;i++) da[i]=dots[i]+off; });
+  var line=gsmooth(x,da,s.m,LINE_BW);
+  return {s:s,x:x,da:da,line:line};
 }
 
-/* ---- the career trajectory chart (inline SVG) ---- */
-function drawTrajectory(p){
-  var s=flattenSeries(p.series); if(s.n<2) return null;
-  var dots=ewma(s.v,DOT_BETA), line=reanchorLine(s,gsmooth(s.g,dots,s.m,LINE_BW));
+/* ---- the career trajectory chart (inline SVG), one or more players ---- */
+function drawChart(players){
+  var P=[];
+  for(var pi=0;pi<players.length;pi++){ var ps=players[pi].series?playerSeries(players[pi].series):null;
+    if(ps){ ps.name=players[pi].name; ps.key=players[pi].key; ps.color=LINE_COLORS[pi]||'var(--muted)'; P.push(ps); } }
+  if(!P.length) return null;
+  var solo=(P.length===1);
   var W=920,H=360,PADL=40,PADR=16,PADT=22,PADB=34;
-  // y-domain: cover the band (2nd..98th pct of the dots) and the line, always including 0
-  var lo=Math.min(quant(dots,0.02),Math.min.apply(null,line),0),
-      hi=Math.max(quant(dots,0.98),Math.max.apply(null,line),0);
+  // x domain: career game number, 1..(longest career among the shown players)
+  var xlo=1, xhi=2;
+  P.forEach(function(p){ if(p.s.n>xhi)xhi=p.s.n; });
+  // y domain: every line, plus the solo player's dots, always including 0
+  var ys=[0]; P.forEach(function(p){ p.line.forEach(function(y){ys.push(y);}); });
+  if(solo){ ys.push(quant(P[0].da,0.02),quant(P[0].da,0.98)); }
+  var lo=Math.min.apply(null,ys), hi=Math.max.apply(null,ys);
   var pad=Math.max(0.6,(hi-lo)*0.08); lo-=pad; hi+=pad;
-  var X=function(gi){ return PADL + (gi-1)/Math.max(1,s.n-1)*(W-PADL-PADR); };
+  var X=function(xx){ return PADL + (xx-xlo)/(xhi-xlo)*(W-PADL-PADR); };
   var Y=function(y){ return PADT + (hi-y)/(hi-lo)*(H-PADT-PADB); };
   var g='';
-  // y gridlines
-  var ticks=yticks(lo,hi);
-  ticks.forEach(function(t){ var y=Y(t).toFixed(1);
+  yticks(lo,hi).forEach(function(t){ var y=Y(t).toFixed(1);
     g+='<line class="'+(t===0?'zero':'grid')+'" x1="'+PADL+'" x2="'+(W-PADR)+'" y1="'+y+'" y2="'+y+'"/>';
     g+='<text x="'+(PADL-8)+'" y="'+y+'" text-anchor="end" dominant-baseline="middle" font-size="11">'+(t>0?'+':'')+t+'</text>'; });
   g+='<text x="'+(PADL-8)+'" y="'+(Y(0)-10).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="var(--faint)">avg</text>';
-  // season dividers + year labels at the bottom
-  s.bounds.forEach(function(b,ix){ if(ix>0){ var x=X(b.si+1).toFixed(1);
-      g+='<line class="seasrule" x1="'+x+'" x2="'+x+'" y1="'+PADT+'" y2="'+(H-PADB)+'"/>'; }
-    var lab=(SLAB[b.code]||b.code).slice(2,4);
-    var xc=X(b.si+1+( (ix<s.bounds.length-1?s.bounds[ix+1].si:s.n) - b.si)/2).toFixed(1);
-    g+='<text x="'+xc+'" y="'+(H-PADB+16)+'" text-anchor="middle" font-size="10">'+lab+'</text>'; });
+  // x-axis: game-number gridlines + labels (players line up by career game number, no seasons)
+  var xstep = xhi<=40?10 : (xhi<=120?20 : (xhi<=260?40:60));
+  for(var gx=xstep; gx<xhi; gx+=xstep){ var xg=X(gx).toFixed(1);
+    g+='<line class="grid" x1="'+xg+'" x2="'+xg+'" y1="'+PADT+'" y2="'+(H-PADB)+'"/>';
+    g+='<text x="'+xg+'" y="'+(H-PADB+16)+'" text-anchor="middle" font-size="10">'+gx+'</text>'; }
+  g+='<text x="'+X(1).toFixed(1)+'" y="'+(H-PADB+16)+'" text-anchor="start" font-size="9.5" fill="var(--faint)">game</text>';
   g+='<line class="axis" x1="'+PADL+'" x2="'+(W-PADR)+'" y1="'+(H-PADB)+'" y2="'+(H-PADB)+'"/>';
-  // per-game dots (the band), skipping any that fall outside the domain
-  for(var i=0;i<s.n;i++){ var dv=dots[i]; if(dv<lo||dv>hi) continue;
-    g+='<circle class="gdot" cx="'+X(s.g[i]).toFixed(1)+'" cy="'+Y(dv).toFixed(1)+'" r="2.6" fill="'+heatFill(s.v[i])+'"/>'; }
-  // the smooth line, one segment per season so a season-to-season level change reads as a step
-  // at the divider rather than a diagonal slash across it
-  s.bounds.forEach(function(b,ix){ var a=b.si, z=(ix<s.bounds.length-1?s.bounds[ix+1].si:s.n);
-    if(z-a<2) return; var seg='';
-    for(var i=a;i<z;i++){ seg+=(i===a?'M':'L')+X(s.g[i]).toFixed(1)+' '+Y(line[i]).toFixed(1); }
-    g+='<path class="fline" d="'+seg+'"/>'; });
-  // hover layer
+  // solo view keeps the per-game dots; a comparison shows lines only
+  if(solo){ var p0=P[0]; for(var i=0;i<p0.s.n;i++){ var dv=p0.da[i]; if(dv<lo||dv>hi) continue;
+    g+='<circle class="gdot" cx="'+X(p0.x[i]).toFixed(1)+'" cy="'+Y(dv).toFixed(1)+'" r="2.6" fill="'+heatFill(p0.da[i])+'"/>'; } }
+  // one continuous smooth line per player
+  P.forEach(function(p){ var d=p.line.map(function(y,i){return (i?'L':'M')+X(p.x[i]).toFixed(1)+' '+Y(y).toFixed(1);}).join(' ');
+    g+='<path class="fline" style="stroke:'+p.color+'" d="'+d+'"/>'; });
+  // hover layer (reads the primary line)
   g+='<circle id="hd" class="hoverdot" r="4"/><line id="cx" class="cross" y1="'+PADT+'" y2="'+(H-PADB)+'"/>';
   g+='<rect id="hit" x="'+PADL+'" y="'+PADT+'" width="'+(W-PADL-PADR)+'" height="'+(H-PADT-PADB)+'" fill="transparent"/>';
-  var svg='<svg id="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Game-by-game FPM for '+esc(nice(p.name))+'">'+g+'</svg>';
-  return {svg:svg, s:s, line:line, X:X, Y:Y, W:W, PADL:PADL, PADR:PADR};
+  var svg='<svg id="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Career FPM trajectory">'+g+'</svg>';
+  return {svg:svg, P:P, X:X, Y:Y, xlo:xlo, xhi:xhi, W:W, PADL:PADL, PADR:PADR};
 }
 function yticks(lo,hi){ var span=hi-lo,step=span>12?4:(span>6?2:1),out=[],st=Math.ceil(lo/step)*step;
   for(var t=st;t<=hi+1e-9;t+=step)out.push(Math.round(t)); if(out.indexOf(0)<0&&lo<0&&hi>0)out.push(0);
@@ -289,8 +305,12 @@ function render(k){
   var bestD=rows.reduce(function(a,b){return b.d>a.d?b:a;},rows[0]);
   var teams=[];rows.forEach(function(r){if(teams[teams.length-1]!==r.team)teams.push(r.team);});
 
-  var ch=p.series?drawTrajectory(p):null;
-  var chartHtml=ch?('<div class="chart-h"><h3>FPM by game</h3><span class="note">career, each season at its FPM</span></div>'+ch.svg+'<div class="tip" id="tip"></div>')
+  COMPARE=COMPARE.filter(function(x){return x!==k && ALL[x];});
+  var players=[{name:p.name,key:k,series:p.series}];
+  COMPARE.forEach(function(ck){ var cp=ALL[ck]; players.push({name:cp.name,key:ck,series:(cp.pid?GAMES[cp.pid]:null)}); });
+  var ch=p.series?drawChart(players):null;
+  var note=players.length>1?'aligned by game number':'career, game by game';
+  var chartHtml=ch?('<div class="chart-h"><h3>FPM by game</h3><span class="note">'+note+'</span></div>'+buildCmp(players)+ch.svg+'<div class="tip" id="tip"></div>')
                  :'<div class="chart-h"><h3>FPM by game</h3></div><div class="status" style="color:var(--muted);padding:30px 0;font-size:13px">No game-by-game data for this player yet.</div>';
 
   var h=''
@@ -330,25 +350,64 @@ function render(k){
   }
   h+='</tbody></table></div>';
   $('view').innerHTML=h;
+  wireCompare(k);
   if(ch) wireHover(ch);
 }
 function val(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+sgn(v)+'</span>';}
 
+/* ---- compare: legend chips + an "add player" box, up to two extra lines ---- */
+var COMPARE=[];
+function buildCmp(players){
+  var chips=players.map(function(pl,i){
+    var rm=(i>0)?'<button class="cx-rm" type="button" title="Remove" data-k="'+encodeURIComponent(pl.key)+'">&times;</button>':'';
+    return '<span class="cchip"><span class="sw" style="background:'+(LINE_COLORS[i]||'var(--muted)')+'"></span>'+esc(nice(pl.name))+rm+'</span>';
+  }).join('');
+  var add=(COMPARE.length<2)?'<span class="cadd"><input id="q2" type="text" placeholder="+ compare player" autocomplete="off" spellcheck="false" aria-label="Add a player to compare"><ul class="menu" id="menu2" role="listbox"></ul></span>':'';
+  return '<div class="cmp">'+chips+add+'</div>';
+}
+function wireCompare(primaryKey){
+  var rms=document.querySelectorAll('.cx-rm');
+  for(var r=0;r<rms.length;r++){ rms[r].addEventListener('click',function(){
+    var kk=decodeURIComponent(this.getAttribute('data-k'));
+    COMPARE=COMPARE.filter(function(x){return x!==kk;}); render(primaryKey); }); }
+  var q2=$('q2'); if(!q2) return;
+  var M={items:[],active:-1,open:false};
+  function avail(list){ return list.filter(function(it){return it.key!==primaryKey && COMPARE.indexOf(it.key)<0;}); }
+  function open2(list){ var el=$('menu2'); M.items=list; M.active=list.length?0:-1;
+    el.innerHTML=list.length?list.map(function(it,i){return '<li role="option" data-k="'+encodeURIComponent(it.key)+'" class="'+(i===0?'on':'')+'"><span class="nm">'+esc(it.nice)+'</span><span class="mt">'+esc(it.sub)+'</span></li>';}).join(''):'<li class="none">No player by that name</li>';
+    el.classList.add('open'); M.open=true; }
+  function close2(){ var el=$('menu2'); if(el){el.classList.remove('open');el.innerHTML='';} M.open=false; M.active=-1; }
+  function paint2(){ var lis=$('menu2').querySelectorAll('li[data-k]'); for(var i=0;i<lis.length;i++){lis[i].classList.toggle('on',i===M.active);} var a=lis[M.active]; if(a)a.scrollIntoView({block:'nearest'}); }
+  function add(kk){ if(kk!==primaryKey && COMPARE.indexOf(kk)<0 && COMPARE.length<2){ COMPARE.push(kk); render(primaryKey); } }
+  q2.addEventListener('input',function(){ var v=this.value; if(v.trim())open2(avail(filterList(v))); else close2(); });
+  q2.addEventListener('focus',function(){ if(this.value.trim())open2(avail(filterList(this.value))); });
+  q2.addEventListener('keydown',function(e){
+    if(!M.open){ if(e.key==='ArrowDown'&&this.value.trim()){open2(avail(filterList(this.value)));e.preventDefault();} return; }
+    if(e.key==='ArrowDown'){M.active=Math.min(M.active+1,M.items.length-1);paint2();e.preventDefault();}
+    else if(e.key==='ArrowUp'){M.active=Math.max(M.active-1,0);paint2();e.preventDefault();}
+    else if(e.key==='Enter'){ if(M.items[M.active]){add(M.items[M.active].key);e.preventDefault();} }
+    else if(e.key==='Escape'){close2();} });
+  $('menu2').addEventListener('mousedown',function(e){ var li=e.target.closest('li[data-k]'); if(li){e.preventDefault();add(decodeURIComponent(li.getAttribute('data-k')));} });
+  document.addEventListener('click',function(e){ if(!e.target.closest('.cadd'))close2(); });
+}
+
 /* hover readout on the trajectory */
 function wireHover(ch){
   var svg=$('chart'),tip=$('tip'),cx=$('cx'),hd=$('hd'),hit=$('hit');
-  var box,vb,sx,sy;
+  var p0=ch.P[0]; var box,vb,sx,sy;
   function geom(){ box=svg.getBoundingClientRect(); vb=svg.viewBox.baseVal; sx=box.width/vb.width; sy=box.height/vb.height; }
+  function nearest(p,xval){ var best=0,bd=1e9; for(var i=0;i<p.x.length;i++){var dd=Math.abs(p.x[i]-xval);if(dd<bd){bd=dd;best=i;}} return best; }
   function at(clientX){ geom();
-    var vx=(clientX-box.left)/sx;                                  // chart x in viewBox units
-    var gi=Math.round(1+(vx-ch.PADL)/(ch.W-ch.PADL-ch.PADR)*(ch.s.n-1));
-    gi=Math.max(1,Math.min(ch.s.n,gi)); var i=gi-1;
-    var px=ch.X(gi),py=ch.Y(ch.line[i]);
+    var vx=(clientX-box.left)/sx;
+    var xval=ch.xlo+(vx-ch.PADL)/(ch.W-ch.PADL-ch.PADR)*(ch.xhi-ch.xlo);
+    var i0=nearest(p0,xval); var px=ch.X(p0.x[i0]),py=ch.Y(p0.line[i0]);
     cx.setAttribute('x1',px);cx.setAttribute('x2',px);cx.style.opacity=1;
     hd.setAttribute('cx',px);hd.setAttribute('cy',py);hd.style.opacity=1;
     tip.style.opacity=1; tip.style.left=(px*sx)+'px'; tip.style.top=(py*sy-12)+'px';
-    var lab=SLAB[ch.s.seas[i]]||ch.s.seas[i];
-    tip.innerHTML='<b>'+lab+'</b><br>trend <b>'+sgn1(ch.line[i])+'</b> &nbsp;<span style="color:var(--muted)">game '+gi+'</span>';
+    var lab='game '+Math.round(p0.x[i0]);
+    var lines=ch.P.map(function(p){ var ii=nearest(p,xval);
+      return '<span style="color:'+p.color+'">■</span> '+esc(nice(p.name))+' <b>'+sgn1(p.line[ii])+'</b>'; }).join('<br>');
+    tip.innerHTML='<b>'+lab+'</b><br>'+lines;
   }
   function hide(){ tip.style.opacity=0; cx.style.opacity=0; hd.style.opacity=0; }
   hit.addEventListener('mousemove',function(e){at(e.clientX);});
