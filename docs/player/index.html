@@ -328,14 +328,19 @@ function render(k){
   var chartHtml=ch?('<div class="chart-h"><h3>FPM by game</h3><span class="note">'+note+'</span></div>'+ch.svg+'<div class="tip" id="tip"></div>')
                  :'<div class="chart-h"><h3>FPM by game</h3></div><div class="status" style="color:var(--muted);padding:30px 0;font-size:13px">No game-by-game data for this player yet.</div>';
 
+  var cmp=players.length>1;
+  var phead=cmp
+    ? '<div class="phead"><h2>Comparing players</h2></div>'
+    : '<div class="phead">'
+      +'  <h2>'+esc(nice(p.name))+'</h2>'
+      +'  <div class="psub"><span>'+rows[0].label+' to '+last.label+'</span>'
+      +'    <span>'+n+' season'+(n>1?'s':'')+'</span>'
+      +'    <span>'+teams.map(esc).join(' · ')+'</span>'
+      +'  </div>'
+      +'</div>';
+
   var h=''
-    +'<div class="phead">'
-    +'  <h2>'+esc(nice(p.name))+'</h2>'
-    +'  <div class="psub"><span>'+rows[0].label+' to '+last.label+'</span>'
-    +'    <span>'+n+' season'+(n>1?'s':'')+'</span>'
-    +'    <span>'+teams.map(esc).join(' · ')+'</span>'
-    +'  </div>'
-    +'</div>'
+    +phead
 
     +buildCmp(players)
 
