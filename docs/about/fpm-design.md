@@ -92,9 +92,10 @@ sooner keep thin data than throw it away.
 
 ## Bibliography
 
-Grouped by family, with a brief note on each. Links were valid at compile time. Every entry here
+Grouped by family, with a brief note on each. Links were valid at compile time. Most entries here
 contributed something to FPM: a method, a target, a parameter, a decision that was tested, or a claim
-made in these notes. Work that points at what could be built next rather than at what is built is in
+made in these notes. One group near the end earns its place differently, as comparison: the public
+metrics that share FPM's shape without feeding into it. Work that points at what could be built next rather than at what is built is in
 the [future work](https://github.com/filippospol/FPM/blob/main/docs/about/fpm-future-work.md) file,
 next to the project it belongs to. A short list of surveys closes the section.
 
@@ -103,7 +104,7 @@ next to the project it belongs to. A short list of surveys closes the section.
 - **Rosenbaum, D. (2004).** *Measuring How NBA Players Help Their Teams Win.* The original box-score plus-minus. https://www.82games.com/comm30.htm
 - **Sill, J. (2010).** *Improved NBA Adjusted +/− Using Regularization.* MIT Sloan. The founding ridge-RAPM paper. https://supermariogiacomazzo.github.io/STOR538_WEBSITE/Articles/Basketball/Basketball_Sill.pdf
 - **Macdonald, B. (2012).** *Adjusted Plus-Minus using Ridge Regression.* Ridge APM with a custom response; the template for the expected-points version that was tried and dropped. https://arxiv.org/abs/1201.0317
-- **Jacobs, J. (Squared Statistics).** *Exercising Error under RAPM.* RAPM standard errors. https://squared2020.com/2019/10/03/exercising-error-quantifying-statistical-tests-under-rapm-part-iv/
+- **Jacobs, J. (Squared Statistics).** The clearest public walk-through of how RAPM is actually built: a multi-part series covering the design matrix, the ridge penalty read as a zero-centered prior, how stint-building and possession counting swing the result, and standard errors near two to two-and-a-half points per 100 that leave most top players statistically tied. The blog ranges well past RAPM, into shot charts, tracking and general statistical method. https://squared2020.com, with the RAPM build-up at https://squared2020.com/2018/12/24/regularized-adjusted-plus-minus-part-iii-what-had-really-happened-was/ and the error work at https://squared2020.com/2019/10/03/exercising-error-quantifying-statistical-tests-under-rapm-part-iv/
 
 ### All-in-one metrics and box priors (the architecture FPM mirrors)
 
@@ -113,8 +114,18 @@ next to the project it belongs to. A short list of surveys closes the section.
 - **BBall Index (LEBRON).** Box prior plus role-aware RAPM. https://www.bball-index.com/lebron-introduction/
 - **FiveThirtyEight (RAPTOR).** A box/tracking and on-off blend. https://fivethirtyeight.com/methodology/how-our-raptor-metric-works/
 - **Medvedovsky, K. & Patton, A. (DARKO).** A daily-updating talent model with aging built in. https://kmedved.com/
-- **LUMA (court-share).** A possession-level, shot-aware model; the reference for the expected-points version that was tried and dropped. https://court-share.com/luma
+- **LUMA Basketball Research (ARC, LOKI).** An open, community-run NBA project: ARC is its attribution rating, an expected-box-value-prior RAPM in points per 100 against an average possession, and LOKI is the matching forward projection; the same group runs the open Hoop Impact Bench, which scores these metrics against real games. LUMA's possession-value framing was the reference for the shot-aware, expected-points target FPM tried and dropped. https://lumahoops.org (leaderboard https://court-share.com/luma, bench https://hoopimpactbench.org)
 - **CourtSignal (PULSE).** A Bayesian prior-informed RAPM for the NBA: a box-score prior trained walk-forward on a career RAPM target, cross-fit by player, with a REML-tuned lineup update on the points-per-100 scale. An independent build that converged on the same architecture as FPM, down to leaning the prior harder on offense than defense, and split into a retrospective season rating (Season PULSE) and a forward expected-impact number (Current PULSE). https://courtsignal.net/
+
+### Other public impact metrics (parallel work, for comparison)
+
+Contemporary all-in-one metrics that share FPM's prior-and-regularized-on/off skeleton without feeding into it. They sit here as reference points, not sources.
+
+- **Wijaya, T. (MAMBA).** A box prior built on Synergy play-type points over expectation, laid over a time-decayed, multi-year RAPM target that the prior is regressed toward; retrodiction-tested against LEBRON and EPM. The clearest public case for folding play-type data into the box side. https://www.teemohoop.com/mamba
+- **nbarapm.com (Six-Factor RAPM).** One RAPM fit split into offensive and defensive shooting, turnovers and rebounding by running three ridge regressions on the same stints, the six parts summing back to the total. The cleanest public version of the kind of offense/defense-and-factor breakdown FPM reports. https://nbarapm.com
+- **nbacouchside (Stable Player Impact, SPI).** PIPM-style box plus luck-adjusted on/off, with padding on every component and a games-started term, on a 1997-2022 database; its regression toward the mean is stronger early in a season and eases as the sample fills, the same instinct as FPM's recency loosening. https://nbacouchside.net/2022/11/05/introducing-nba-stable-player-impact-spi/
+- **Alleygorithm (Estimated Wins Added, EWA).** Ridge RAPM fit on the change in win probability per possession rather than point margin, with role-aware interactions and an empirical-Bayes shrink for thin samples, checked on rolling out-of-sample seasons. A win-probability target in place of raw score. https://www.alleygorithm.com/methodology
+- **Oliver, D. (Net Points, ESPN).** A single-game contribution stat rather than a forward rating: a RAPM signal multiplied by possessions, then regressed on raw stat totals to set the weights, read against league average per 100 and broken into the four factors. The box-prior step aimed at one game instead of next season. https://global.espn.com/nba/story/_/id/44093220/introducing-net-points-latest-nba-metric-amazing-early-findings (method notes: https://jeremiasengelmann.substack.com/p/espn-just-released-net-points-a-new)
 
 ### Prior, stabilization, luck and aging
 
