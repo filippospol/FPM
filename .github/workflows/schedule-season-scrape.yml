@@ -39,7 +39,12 @@ concurrency:
 
 jobs:
   scrape:
-    runs-on: ubuntu-latest
+    # Pinned to 24.04 on purpose. `ubuntu-latest` has migrated to Ubuntu 26.04,
+    # whose newer ICU (libicui18n.so.76) breaks the Posit binary `stringi`, which
+    # is built against 24.04's ICU 74 -> "libicui18n.so.74: cannot open shared
+    # object file" when stringr/stringi load. Staying on 24.04 keeps the system
+    # ICU in step with the binary packages. Revisit when P3M ships 26.04 binaries.
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
       - name: Checkout
@@ -50,15 +55,16 @@ jobs:
         with:
           use-public-rspm: true     # Posit binary packages (no source compiles)
 
-      # Cache the installed package library across runs. The key is static, so
-      # after the FIRST run the library is restored in seconds and the install
-      # step below is a no-op. Bump -v2 to v3 if you change the package list or R.
+      # Cache the installed package library across runs. The key pins the runner
+      # OS so the cache is rebuilt automatically if we ever move off 24.04 (the
+      # ICU that compiled binaries link against is tied to the OS). Bump the
+      # trailing version (-v3 -> -v4) if you change the package list or R.
       - name: Cache R packages
         uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-pkgs-${{ runner.os }}-v2
-          restore-keys: r-pkgs-${{ runner.os }}-
+          key: r-pkgs-ubuntu-24.04-v3
+          restore-keys: r-pkgs-ubuntu-24.04-
 
       - name: Install missing R packages
         shell: Rscript {0}
