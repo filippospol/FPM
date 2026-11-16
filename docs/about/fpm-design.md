@@ -57,6 +57,18 @@ That's where the aging curve and the recency decay come from. A player's rating 
 recent form, with older seasons fading out and the current season loosened so it tracks how he's playing
 now.
 
+Two later additions came out of the same testing. The first is that each season's regression also reads
+the previous season's stints, at a reduced weight. One season of lineups, and far less early in a season,
+often cannot separate players who share the floor, and last year's lineups, where many of the same
+players were combined differently, help split the credit. The recency filter already carries each
+player's own history forward; this puts last season inside the regression itself, and its benefit is
+largest in the first months of a season. The second concerns players the model has not seen. A large
+share of any season's minutes go to players with no rating from the season before, newcomers to the
+EuroLeague and players returning after a year away. Wherever a rating is turned into a forecast, in the
+tests and in the scale, a returning player is carried forward from his last rating and a newcomer is
+counted as somewhat below average instead of average. That changes no player's rating; it makes the
+forecast, and so the test every setting is judged by, more honest.
+
 The last choice is a habit more than a feature. The tuning parameters are set by retrodiction, so a
 piece stays in only if it helps predict what a player does next, not because it makes the current
 leaderboard look right. That rule threw out a few reasonable-sounding ideas: docking players who change
@@ -224,7 +236,7 @@ even when the player has not changed.
 **Early-season and low-minute ratings lean on the past.** Until a player logs enough possessions, his
 rating is mostly his age-adjusted baseline. That's the right call statistically, but it means the live
 board is slow to reward a real early breakout, which is exactly what the uncertainty column is there to
-flag.
+flag. Keeping last season's lineups in the regression at a reduced weight steadies the early board, but it does not make it quick.
 
 **Era and cross-season comparability is approximate.** Features are standardized within each season and
 the scale is set from past seasons, but comparing a 2009 rating to a 2026 one still assumes that

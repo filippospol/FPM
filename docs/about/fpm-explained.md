@@ -30,7 +30,9 @@ So both views are half-blind. FPM's whole idea is to make them check each other,
 
 The on/off side gets cleaned up first. RAPM does the bookkeeping that pulls a player apart from his
 teammates and opponents, so he's credited for his own effect and not his lineup's. That helps, but one
-season of it still bounces around a lot, so FPM doesn't take it at face value. It leans the number
+season of it still bounces around a lot, so FPM doesn't take it at face value. Last season's lineups
+are kept in the calculation at a reduced weight, which helps most early in a season, when there are
+too few games to tell teammates apart. Then it leans the number
 toward what the box score would lead you to expect. If a player's on/off is miles better than his
 production says it should be, that's usually a quirk of who he shared the floor with, so FPM pulls him
 back toward what he's really doing; if the two line up, it trusts them. That's mostly what stops a bench
@@ -63,6 +65,11 @@ years fading out, more like a rolling memory than a flat career average. Early i
 there's much to go on, the number leans on what we already knew about him, because six games don't tell
 you much; as the year fills in, this season takes over. It behaves like a rubber band: real
 improvement or decline drags the rating along, but one rough patch can't snap it to the top.
+
+One group falls outside all of this: a player with no EuroLeague games yet has no rating at all. When
+the model is checked against the following season, such a player is counted as a bit below average,
+not as average, since that is what newcomers to this level usually are, and a player returning after
+a year away is carried forward from his last rating.
 
 ## How it was built
 
