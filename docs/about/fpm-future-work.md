@@ -175,6 +175,29 @@ Carta, Favero & Maver,
 [*Do timeouts matter? A study of Euroleague basketball*](https://journals.sagepub.com/doi/10.1177/22150218261434693),
 Journal of Sports Analytics (2026).
 
+**Referees.** Every fixture records the three-man crew that worked it, and nothing is built on it yet.
+Foul and free-throw rates by crew, pace under each, how tightly or loosely a crew calls, and whether the
+home whistle varies from one crew to the next. The call consistency within a crew of three, and a
+referee-adjusted foul-drawing rate for players that tells a real foul-drawer apart from the beneficiary
+of a lenient night. It is a largely untouched EuroLeague topic that the data supports outright, and it
+feeds back into the model as a game-level control. Reading:
+Foteinakis et al., [*Home advantage in EuroLeague basketball*](https://www.jhse.es/index.php/jhse/article/view/quantifying-euroleague-home-advantage),
+Journal of Human Sport and Exercise (2026); Price & Wolfers, *Racial Discrimination Among NBA Referees*,
+Quarterly Journal of Economics (2010), for the method of isolating a referee's own effect.
+
+**Team style and style matchups.** The roles work clusters players; teams can be clustered the same way,
+from their four factors, pace and shot profile, into playing styles: pace-and-space, half-court grind,
+switch-and-press, offensive-glass. Then the question a coach actually asks, do styles beat styles beyond
+raw rating. Whether a fast team underperforms its net rating against the best half-court defences, read
+as the residual of game outcomes after both teams' strength is taken out, is a matchup effect no
+EuroLeague metric models. Reading:
+[Basketball Analytics Lab, exploring competitive dynamics across European basketball leagues](https://basketballanalyticslab.substack.com/p/exploring-competitive-dynamics-across).
+
+**Rivalries and matchup residuals.** With twenty seasons of head-to-heads, whether specific pairings
+defy their ratings repeatedly, one club beating another by more than strength predicts year after year,
+and whether that persistence is real or the noise of small samples. The same split-half and year-to-year
+tests used elsewhere decide it.
+
 ## End of games, clutch and strategy
 
 **Clutch time.** Every team's and player's numbers in the moments that decide games. The standard
@@ -257,6 +280,14 @@ synergies appear larger than the NBA's. Reading:
 Petridis & Pelechrinis, [*Lineup RAPM*](https://arxiv.org/abs/2601.15000) (2026);
 [*Hypergraph Adjusted Plus-Minus*](https://arxiv.org/abs/2403.20214) (2024);
 [German Basketball Analytics, lineup and coach synergies in European basketball](https://germanbasketballanalytics.substack.com/p/lineup-and-coach-synergies-in-european).
+
+**Positional balance and the value of the next specialist.** The model sums five individual ratings, and
+the next-season test shows that sum over-values lineups short on ball-handlers (the limitation recorded
+in the design notes): a five needs guards it cannot get from bigs. The descriptive study behind it is
+the marginal value of the second ball-handler, the first rim protector, the third shooter, and where
+diminishing returns set in for each, mapped from the stints. It is the empirical groundwork for the
+lineup or synergy term, and a finding in its own right: which compositions of player profiles overperform
+their summed rating. Reading: the lineup-synergy references above.
 
 **Defensive profile while on the floor.** For each player, what opponents shot while he was on the
 floor:
@@ -374,6 +405,28 @@ Vaci, Cocić, Gula & Bilalić,
 far, with a player's level treated as something that drifts. That gives a form chart for each
 player and a rating that reacts to a role change within a few games. Reading:
 Fearnhead & Taylor, [*On Estimating the Ability of NBA Players*](https://arxiv.org/abs/1008.0705) (2011).
+
+**Within-game fatigue and load.** The schedule-congestion item is about rest between games; this is the
+micro version, inside one game. From the play-by-play clock and the shot log, how a player's efficiency
+decays with the minutes he has already played and how late in the game it is: whether shooting falls in
+the fourth quarter and by how much for heavy-minutes players, and which stars fade down the stretch. The
+between-game cousin is studied; the within-game version is largely not. Reading:
+Sansone et al., [*Game schedule, travel demands and contextual factors*](https://iris.uniroma4.it/retrieve/c1c671ca-799b-4086-816e-f2ac8db15633/Game%20schedule%20%20travel%20demands%20and%20contextual%20factors%20influence%20key%20game-related%20statistics%20among%20the%20top%20European%20male%20basketball%20teams.pdf),
+Journal of Sports Sciences (2024).
+
+**Breakout and decline, early.** Careers and aging, and the game-by-game chart, are descriptive, read
+after the fact. The forward version flags, from a player's partial-season form, age, a role change and
+his prior, who is mid-leap or mid-decline before the full-season rating has caught up. It turns the
+recency filter from a smoother into a scouting signal, and it is testable in the usual way: whether the
+flagged players actually move the next season.
+
+**How reliable is a one-season rating.** A study of FPM against itself, in the spirit of the
+standard-error band but carried further: how much of a single season's number is signal versus noise by
+minutes played, how many of the top twenty are statistically distinguishable from one another rather than
+tied, and how the metric scores on discrimination, stability and independence. It tells a reader how far
+to trust a one-season figure and where the metric is confident rather than guessing. Reading:
+Franks, D'Amour, Cervone & Bornn, [*Meta-analytics*](https://arxiv.org/abs/1609.09830) (2016);
+Jacobs, [*Exercising Error under RAPM*](https://squared2020.com/2019/10/03/exercising-error-quantifying-statistical-tests-under-rapm-part-iv/).
 
 **Minutes projections.** A per-game minutes model, a recency filter with the dressed twelve's
 minutes redistributed to sum to 200, already tested at about 4.7 minutes of error per player. It is
