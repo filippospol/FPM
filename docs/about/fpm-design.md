@@ -219,6 +219,19 @@ The EuroLeague literature (Grassetti et al.) finds synergies here are larger tha
 pair- and unit-level value gets absorbed into individual ratings rather than credited to the
 combination.
 
+**The additive lineup sum over-values guard-short fives.** A lineup's value is read as the sum of its
+five players' ratings, which quietly treats positions as interchangeable. They are not: a five needs
+ball-handling it cannot get from bigs and forwards. Scored against the next season, lineups short on
+guards come in below what their summed FPM predicts, by about 6.5 points per 100 with no guard on the
+floor and 1.9 with one, while the usual two- and three-guard lineups land on their prediction and a
+fourth guard adds nothing. This is a diminishing return to ball-handlers, a measured instance of the
+missing synergy term above rather than a bias in the individual ratings: a guard and a big with the same
+FPM are, as players, about equally good, but five bigs cannot be stacked and summed. It shows up in
+lineup and team valuation over the uncommon guard-short units and barely touches the player board, where
+real rotations almost always carry the two guards they need. The finding is the reason an apparent
+"positional bias" in the ratings dissolves on inspection: the ratings are roughly even-handed by
+position; it is the arithmetic that combines them that is incomplete.
+
 **The prior can over-correct.** Pulling single-season on/off toward a box-score prior trades some
 accuracy for stability: it cuts the noise, but a season that genuinely breaks from the prior (a real
 leap, a role change) gets pulled back more than it should. The strength of that pull was set for average
