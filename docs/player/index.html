@@ -109,6 +109,10 @@ tbody tr.cur td{background:var(--raise)}
 td.fpm{width:78px;padding:6px}
 .fchip{border-radius:var(--r);padding:7px 0 6px;text-align:center}
 .fpm .v{display:block;font:500 14px/1.1 var(--f-mono);color:var(--chip-text)}
+/* compare grid: one FPM column per player, aligned by season */
+.cgrid th.pcol{white-space:normal;vertical-align:bottom}
+.cgrid th.pcol .sw{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.cgrid td.na{color:var(--muted);text-align:center;font-family:var(--f-mono)}
 .up{color:var(--pos-text)}.dn{color:var(--neg-text)}
 .empty{padding:56px 4px;color:var(--muted);font-size:14.5px;line-height:1.65;max-width:52ch}
 .empty b{color:var(--text);font-weight:600}
@@ -339,27 +343,21 @@ function render(k){
       +'  </div>'
       +'</div>';
 
-  var h=''
-    +phead
-
-    +buildCmp(players)
-
-    +'<div class="stat-row">'
+  // single-player summary row (hidden in compare mode: the per-player cards below carry it)
+  var statRow='<div class="stat-row">'
     +'  <div class="stat"><div class="k">Latest</div><div class="v">'+val(last.fpm)+'<small>'+last.label+'</small></div></div>'
     +'  <div class="stat"><div class="k">Peak</div><div class="v">'+val(peak.fpm)+'<small>'+peak.label+'</small></div></div>'
     +'  <div class="stat"><div class="k">Best offense</div><div class="v">'+val(bestO.o)+'<small>'+bestO.label+'</small></div></div>'
     +'  <div class="stat"><div class="k">Best defense</div><div class="v">'+val(bestD.d)+'<small>'+bestD.label+'</small></div></div>'
-    +'</div>'
-
-    +'<div class="chartwrap">'+chartHtml+'</div>'
-
-    +'<div class="scroll"><table><thead><tr>'
+    +'</div>';
+  // single-player full season ledger
+  var ledger='<div class="scroll"><table><thead><tr>'
     +'<th class="l">Season</th><th class="l">Team</th><th class="l c-role">Role</th>'
     +'<th class="c-age">Age</th><th class="c-gp">GP</th><th class="c-min">Min</th><th class="c-poss">Poss</th>'
     +'<th>FPM</th><th>O-FPM</th><th>D-FPM</th>'
     +'</tr></thead><tbody>';
   for(var i=0;i<n;i++){var r=rows[i];     // oldest season first
-    h+='<tr'+(r.code===CUR?' class="cur"':'')+'>'
+    ledger+='<tr'+(r.code===CUR?' class="cur"':'')+'>'
       +'<td class="l s-seas">'+r.label+'</td>'
       +'<td class="l s-team" title="'+esc(TEAMS[r.team]||r.team)+'">'+esc(r.team)+'</td>'
       +'<td class="l s-role c-role">'+esc(r.role)+'</td>'
@@ -370,13 +368,43 @@ function render(k){
       +'<td class="fpm"><div class="fchip" style="'+heatChip(r.fpm)+'"><span class="v">'+sgn(r.fpm)+'</span></div></td>'
       +'<td>'+od(r.o)+'</td><td>'+od(r.d)+'</td></tr>';
   }
-  h+='</tbody></table></div>';
-  h+=buildCompare([k].concat(COMPARE));
+  ledger+='</tbody></table></div>';
+
+  var h=''
+    +phead
+    +buildCmp(players)
+    +(cmp?'':statRow)
+    +'<div class="chartwrap">'+chartHtml+'</div>'
+    +(cmp?alignedGrid([k].concat(COMPARE)):ledger)
+    +buildCompare([k].concat(COMPARE));
   $('view').innerHTML=h;
   wireCompare(k);
   if(ch) wireHover(ch);
 }
 function val(v){v=+v;var c=v>0?'up':(v<0?'dn':'');return '<span class="'+c+'">'+sgn(v)+'</span>';}
+
+/* compare mode: one row per season (union across the shown players), one FPM column per
+   player, colour-matched to the chart lines; blank where a player wasn't in the league. */
+function alignedGrid(keys){
+  var order={},labelOf={};
+  for(var i=0;i<SEAS.length;i++){ order[SEAS[i].code]=i; labelOf[SEAS[i].code]=SEAS[i].label; }
+  var present={};
+  var byKey=keys.map(function(k){ var m={},pl=ALL[k];
+    if(pl&&pl.rows) for(var j=0;j<pl.rows.length;j++){ m[pl.rows[j].code]=pl.rows[j]; present[pl.rows[j].code]=1; }
+    return m; });
+  var codes=Object.keys(present).sort(function(a,b){return (order[a]||0)-(order[b]||0);});
+  var h='<div class="scroll"><table class="cgrid"><thead><tr><th class="l">Season</th>';
+  for(var i=0;i<keys.length;i++){ var col=LINE_COLORS[i]||'var(--muted)';
+    h+='<th class="pcol"><span class="sw" style="background:'+col+'"></span>'+esc(nice(ALL[keys[i]].name))+'</th>'; }
+  h+='</tr></thead><tbody>';
+  for(var c=0;c<codes.length;c++){ var code=codes[c];
+    h+='<tr'+(code===CUR?' class="cur"':'')+'><td class="l s-seas">'+(labelOf[code]||code)+'</td>';
+    for(var m=0;m<byKey.length;m++){ var r=byKey[m][code];
+      h+= r ? '<td class="fpm"><div class="fchip" style="'+heatChip(r.fpm)+'"><span class="v">'+sgn(r.fpm)+'</span></div></td>'
+            : '<td class="na">—</td>'; }
+    h+='</tr>'; }
+  return h+'</tbody></table></div>';
+}
 
 /* ---- compare: legend chips + an "add player" box, up to two extra lines ---- */
 var COMPARE=[];
