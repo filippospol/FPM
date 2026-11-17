@@ -1,7 +1,7 @@
 # Acknowledgements
 
 FPM would not be a thing if it wasn't for Nathan Walker's
-[OpenRAPM](https://github.com/bbstats/openrapm). OpenRAPM puts out NBA ratings going back to
+[OpenRAPM](https://openrapm.com/). OpenRAPM puts out NBA ratings going back to
 1996-97, and it doesn't stop at the numbers. The code is there, the data pipeline is there, the
 parameters are there, and so is a log of what was tried and didn't work.
 
