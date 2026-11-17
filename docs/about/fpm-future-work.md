@@ -27,6 +27,10 @@ only lists what the model uses.
 effective field goal percentage, turnover rate, offensive and defensive rebounding, and free-throw
 rate, for every team and its opponents. Decided minutes are removed with the EuroLeague rule
 described in the design notes. This is the team page Cleaning the Glass built for the NBA.
+Tested on the stints: decided possessions are only about five to seven percent of the total, and
+removing them moves a team's full-season net rating by roughly 0.8 points per 100 on average, with no
+gain in predicting the next season. So the garbage-time cut matters more for the players stuck on the
+floor once a game is decided than for team totals, the same lesson the NBA draws.
 Reading: [Cleaning the Glass, garbage time](https://cleaningtheglass.com/stats/guide/garbage_time);
 Oliver, *Basketball on Paper* (2004).
 
@@ -62,7 +66,12 @@ accuracy. Complete from 2015-16, when the shot feed covers every field goal.
 controls how many threes it allows far more than how many go in, and opponent three-point percentage
 barely repeats from season to season. Both halves can be tested here: allowed three-point rate and
 allowed percentage, split-half and year to year, for twenty seasons. If the result holds, it also
-says how much of a team's defensive rating is luck. Reading:
+says how much of a team's defensive rating is luck. Tested here, and it holds: opponent three-point
+attempt rate repeats well (split-half about 0.72), while opponent three-point percentage allowed is
+close to noise (about 0.16). Luck-adjusting a defensive rating, replacing the opponents' made threes and
+free throws with their expected rate, lifts the stability of that rating (split-half 0.56 to 0.65) while
+barely changing net rating. A defence controls the shots it allows far more than whether they fall, so
+the honest version credits suppressed attempts, not forced misses. Reading:
 [KenPom, one last post on 3P defense](https://kenpom.com/blog/one-last-post-on-3p-defense/).
 
 **Offensive rebounding against transition defence.** Sending players to the glass wins second
@@ -97,7 +106,13 @@ rankings next to the standings. Reading:
 - an Elo rating with margin of victory and carry-over between seasons;
 - the roster's FPM.
 
-Reading:
+One result is already in from testing the first of these: an opponent-adjusted, SRS-style net rating is
+close to a no-op for a full EuroLeague season, because the double round-robin leaves every team with
+nearly the same schedule (correlation 1.000 with raw net rating, no team changing rank). Its small value
+is mid-season, before the schedule has evened out, and across competitions, where opponent strength
+genuinely differs. For a finished domestic season the raw or garbage-time-removed net rating is the
+honest team number, so the interesting comparison here is Elo and roster FPM, not the opponent
+adjustment. Reading:
 [FiveThirtyEight, how we calculate NBA Elo ratings](https://fivethirtyeight.com/features/how-we-calculate-nba-elo-ratings);
 [Solmos, an Elo rating system for the EuroLeague](https://solmos.netlify.app/post/2020-03-10-elo-rating-system/elo-rating-system/).
 
