@@ -49,6 +49,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history so the rebase + push below is clean
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
@@ -89,15 +91,42 @@ jobs:
           fi
 
       - name: Commit refreshed data + stints
+        env:
+          GIT_EDITOR: "true"     # stop `rebase --continue` from opening an editor
         run: |
+          set -euo pipefail
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
           git add "data/el_${SEASON}.rds" "stints/stints_${SEASON}.rds"
           if git diff --cached --quiet; then
             echo "No changes - nothing to commit."
-          else
-            git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' \
-                commit -m "data: ${MODE} ${SEASON} $(date -u +%F)"
-            git push
+            exit 0
           fi
+          git commit -m "data: ${MODE} ${SEASON} $(date -u +%F)"
+
+          # Push; if main gained commits since checkout (a docs push, or the
+          # engine writing the leaderboard back), rebase our data commit on top
+          # of the new main and retry. This is what fixes the non-fast-forward
+          # "! [rejected] main -> main (fetch first)" failure.
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i."
+              exit 0
+            fi
+            echo "Push rejected (attempt $i). Rebasing on latest main..."
+            git fetch origin main
+            # .rds files are binary and cannot auto-merge. In the rare case the
+            # newer main touched the SAME .rds files, keep THIS run's fresh
+            # output (during a rebase, --theirs is the commit being replayed).
+            if ! git rebase --autostash origin/main; then
+              git checkout --theirs -- "data/el_${SEASON}.rds" "stints/stints_${SEASON}.rds"
+              git add "data/el_${SEASON}.rds" "stints/stints_${SEASON}.rds"
+              git rebase --continue
+            fi
+          done
+          echo "Push still failing after 5 attempts."
+          exit 1
 
       - name: Trigger the FPM engine
         if: success()
