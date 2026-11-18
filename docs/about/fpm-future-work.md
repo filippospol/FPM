@@ -31,8 +31,7 @@ Tested on the stints: decided possessions are only about five to seven percent o
 removing them moves a team's full-season net rating by roughly 0.8 points per 100 on average, with no
 gain in predicting the next season. So the garbage-time cut matters more for the players stuck on the
 floor once a game is decided than for team totals, the same lesson the NBA draws.
-Reading: [Cleaning the Glass, garbage time](https://cleaningtheglass.com/stats/guide/garbage_time);
-Oliver, *Basketball on Paper* (2004).
+Reading: [Cleaning the Glass, garbage time](https://cleaningtheglass.com/stats/guide/garbage_time).
 
 **How possessions start.** Every possession classified by what came before it:
 - an opponent make;
@@ -287,7 +286,16 @@ in the design notes): a five needs guards it cannot get from bigs. The descripti
 the marginal value of the second ball-handler, the first rim protector, the third shooter, and where
 diminishing returns set in for each, mapped from the stints. It is the empirical groundwork for the
 lineup or synergy term, and a finding in its own right: which compositions of player profiles overperform
-their summed rating. Reading: the lineup-synergy references above.
+their summed rating. The design notes read the shortfall as a positional one, a role the additive sum
+cannot see. A second reading is worth testing against it, from the skill curve: a player's own efficiency
+tends to fall as his share of the shots grows, and a possession is a shared resource, so some of what a
+guard-short five loses may be its remaining players pushed up their own usage curves rather than the
+missing position as such. The two come apart in this data by holding position fixed and varying the load.
+Reading: the lineup-synergy references above; Oliver's skill curve in the design bibliography;
+Skinner, [*The Price of Anarchy in Basketball*](https://arxiv.org/abs/0908.1801) (2010), an offense read
+as a traffic network where the gap between the selfish shot allocation and the team optimum is the price
+of anarchy, every option carrying the same marginal efficiency at the optimum and, as in traffic, a
+good-looking option sometimes worth removing.
 
 **Defensive profile while on the floor.** For each player, what opponents shot while he was on the
 floor:
