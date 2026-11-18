@@ -519,6 +519,14 @@ Reading: Deshpande & Jensen (2016), above.
 **Ratings that drift within a season.** The game-by-game version above, used as the model rather
 than as a description. Reading: Fearnhead & Taylor (2011), above.
 
+**Fit the prior and the on/off together.** FPM builds a rating in stages: the box-score prior is
+fit first, then the regularized on/off is pulled toward it. The alternative is to estimate both at
+once in a single Bayesian model, so the prior and the on/off inform each other instead of one being
+frozen before the other is fit, with confidence intervals on every rating as a by-product. Whether a
+joint fit beats the staged one on the next-season test is the open question. Reading: Berry,
+[*Fitting prior-informed regularized adjusted plus minus as one big model*](https://georgeberry.substack.com/p/fitting-prior-informed-regularized)
+(2026), the argument, with [xPM / VORP.app](https://vorp.app/) as a worked example.
+
 ## Would need data that is not here
 
 - **Tracking data** (positions of all ten players and the ball): possession value as in POINTWISE,
