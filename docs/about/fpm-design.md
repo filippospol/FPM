@@ -169,7 +169,7 @@ Contemporary all-in-one metrics that share FPM's prior-and-regularized-on/off sk
 
 ### Box-score frameworks, possessions, roles
 
-- **Oliver, D. (2004).** *Basketball on Paper.* Four Factors, possessions, ratings. (ISBN 978-1-57488-688-0.)
+- **Oliver, D. (2004).** *Basketball on Paper.* Four Factors, possessions and ratings, and the skill curve: a player's scoring efficiency and his shot volume trade off against each other, so efficiency tends to slide as usage climbs, sharply for a role player and barely at all for a real scorer. The reason a rating carries less meaning read apart from the usage it was earned at. (ISBN 978-1-57488-688-0.)
 - **Kubatko, J. et al. (2007).** *Analyzing Basketball Statistics.* Per-100 and pace conventions. https://doi.org/10.2202/1559-0410.1070
 - **BBall Index.** *Player roles.* The role taxonomy. https://www.bball-index.com/about/about-the-data/
 
