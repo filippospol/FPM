@@ -535,6 +535,20 @@ joint fit beats the staged one on the next-season test is the open question. Rea
 [*Fitting prior-informed regularized adjusted plus minus as one big model*](https://georgeberry.substack.com/p/fitting-prior-informed-regularized)
 (2026), the argument, with [xPM / VORP.app](https://vorp.app/) as a worked example.
 
+**Held-out ratings for players who always play together.** The hardest case the design notes admit
+is separating players who share almost every possession, where the regression leans on the prior to
+tell them apart. Held-out adjusted plus-minus answers it a different way: it rates the other nine in
+each of a player's stints only from the stints he sat out, drawn from their earlier seasons, which
+gives the margin each stint would be expected to produce with an average player in his place, and
+credits him with the gap between that and what actually happened. Because his own possessions never
+rate his context, two players joined at the hip come apart cleanly, where one-year on/off leaves them
+tangled. In the NBA it validates well, better calibrated than RAPM on what a team loses when a player
+sits, and a little more predictive of the next season on fewer seasons of data. The open question
+here is roster churn: the held-out ratings lean on a player's previous seasons, and many arrive each
+year from a domestic league or the NBA with no EuroLeague history, so the trick that shines there may
+run thin on this data. Reading: LUMA Basketball Research,
+[*HAPM: Held-Out Adjusted Plus-Minus*](https://lumahoops.github.io/hapm/) (2026).
+
 ## Would need data that is not here
 
 - **Tracking data** (positions of all ten players and the ball): possession value as in POINTWISE,
