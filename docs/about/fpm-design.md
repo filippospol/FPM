@@ -132,13 +132,14 @@ next to the project it belongs to. A short list of surveys closes the section.
 
 ### Other public impact metrics (parallel work, for comparison)
 
-Contemporary all-in-one metrics that share FPM's prior-and-regularized-on/off skeleton without feeding into it. They sit here as reference points, not sources.
+Contemporary all-in-one impact metrics that sit alongside FPM without feeding into it, most sharing its prior-and-regularized-on/off skeleton and one built on a different idea. They sit here as reference points, not sources.
 
 - **Wijaya, T. (MAMBA).** A box prior built on Synergy play-type points over expectation, laid over a time-decayed, multi-year RAPM target that the prior is regressed toward; retrodiction-tested against LEBRON and EPM. The clearest public case for folding play-type data into the box side. https://www.teemohoop.com/mamba
 - **nbarapm.com (Six-Factor RAPM).** One RAPM fit split into offensive and defensive shooting, turnovers and rebounding by running three ridge regressions on the same stints, the six parts summing back to the total. The cleanest public version of the kind of offense/defense-and-factor breakdown FPM reports. https://nbarapm.com
 - **nbacouchside (Stable Player Impact, SPI).** PIPM-style box plus luck-adjusted on/off, with padding on every component and a games-started term, on a 1997-2022 database; its regression toward the mean is stronger early in a season and eases as the sample fills, the same instinct as FPM's recency loosening. https://nbacouchside.net/2022/11/05/introducing-nba-stable-player-impact-spi/
 - **Alleygorithm (Estimated Wins Added, EWA).** Ridge RAPM fit on the change in win probability per possession rather than point margin, with role-aware interactions and an empirical-Bayes shrink for thin samples, checked on rolling out-of-sample seasons. A win-probability target in place of raw score. https://www.alleygorithm.com/methodology
 - **Oliver, D. (Net Points, ESPN).** A single-game contribution stat rather than a forward rating: a RAPM signal multiplied by possessions, then regressed on raw stat totals to set the weights, read against league average per 100 and broken into the four factors. The box-prior step aimed at one game instead of next season. https://global.espn.com/nba/story/_/id/44093220/introducing-net-points-latest-nba-metric-amazing-early-findings (method notes: https://jeremiasengelmann.substack.com/p/espn-just-released-net-points-a-new)
+- **LUMA Basketball Research (HAPM).** Held-out adjusted plus-minus for the NBA back to 1997-98, and the one entry here built on a different idea. Rather than regress a player against the teammates who replace him, it rates the other nine in each of his stints only from the stints he sat out and credits him with the gap between what those held-out ratings expected and what the stint produced, which separates players who always share the floor where one-year on/off cannot. Split into offense and defense, shot value and possession value, and validated as better calibrated than RAPM on what a team loses when a player sits. https://lumahoops.github.io/hapm/
 
 ### Prior, stabilization, luck and aging
 
