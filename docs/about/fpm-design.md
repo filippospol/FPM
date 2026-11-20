@@ -179,6 +179,17 @@ Contemporary all-in-one impact metrics that sit alongside FPM without feeding in
 - **Walker, N. (OpenRAPM).** Open NBA RAPM, 1996-97 to now: plain RAPM, a box prior, an out-of-sample shrink, every change judged on games it never saw. The validation-first approach this project follows. https://github.com/bbstats/openrapm
 - **Franks, A., D'Amour, A., Cervone, D. & Bornn, L. (2016).** *Meta-analytics: tools for understanding the statistical properties of sports metrics.* Discrimination, stability and independence as the tests of a metric; the formal version of the next-season and split-half tests in the engine. https://arxiv.org/abs/1609.09830
 
+### Methods used in the exploratory studies
+
+Standard references for the established methods run on the EuroLeague data in the studies recorded in the future-work file.
+
+- **Stern, H. (1994).** *A Brownian Motion Model for the Progress of Sports Scores.* Journal of the American Statistical Association. The lead as a random walk, the basis of the win-probability model.
+- **Tango, Lichtman & Dolphin (2007).** *The Book: Playing the Percentages in Baseball.* The leverage index, how much a play can swing the win probability.
+- **Charnes, Cooper & Rhodes (1978).** *Measuring the efficiency of decision making units.* European Journal of Operational Research. Data envelopment analysis; with Aigner, Lovell & Schmidt (1977), *Formulation and estimation of stochastic frontier production function models,* Journal of Econometrics, for the parametric frontier.
+- **Moran (1950),** *Notes on continuous stochastic phenomena,* Biometrika, and **Anselin (1988),** *Spatial Econometrics: Methods and Models.* Spatial autocorrelation and the shot-chart surface.
+- **Fewell et al. (2012).** *Basketball Teams as Strategic Networks.* PLoS ONE. Passing networks and the triad fingerprint.
+- **Box & Jenkins (1970),** *Time Series Analysis,* and **Cleveland et al. (1990),** *STL.* The seasonal and time-series decomposition of team rate stats.
+
 ### The league itself
 
 - **Štrumbelj, E., Vračar, P., Robnik-Šikonja, M., Dežman, B. & Erčulj, F. (2013).** *A Decade of Euroleague Basketball: an Analysis of Trends and Recent Rule Change Effects.* Journal of Human Kinetics. The measured effect of the 2010 rule changes, the three-point line out to 6.75 m among them, on shooting and pace; the basis for judging each season on its own curve. https://pmc.ncbi.nlm.nih.gov/articles/PMC3827757
