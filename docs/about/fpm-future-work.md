@@ -2,6 +2,8 @@
 
 Everything listed here can be built from the data already in this repository. That data is:
 
+*Grouped by topic: team stats, end of games and clutch, lineups and on/off, players, forecasting, coaches and rosters, ideas for the model itself, data not here, and one small change.*
+
 - the twenty season files, 2007-08 to the season in progress, with:
   - fixtures with dates, venues, attendance and capacity;
   - player and team box scores;
@@ -40,7 +42,7 @@ Reading: [Cleaning the Glass, garbage time](https://cleaningtheglass.com/stats/g
 - a dead-ball turnover;
 - an opponent free throw.
 
-Pace and points per possession for each type, on offence and on defence. In the NBA a possession
+Pace and points per possession for each type, on offense and on defense. In the NBA a possession
 after a steal is worth far more than one after a made basket; how big that gap is here, and which
 teams live off it, is not published anywhere. Reading:
 [Inpredictable, pace and efficiency by possession type](https://www.inpredictable.com/2015/03/team-pace-and-efficiency-by-possession.html);
@@ -53,7 +55,7 @@ each by team and player, and which ball-handlers give up the expensive ones. Rea
 
 **Play context: halfcourt, transition, putbacks.** Every shot carries fast-break, second-chance and
 off-turnover flags, and the clock shows how quickly it came. Those give efficiency in halfcourt, in
-transition and on putbacks, for each team and allowed by each defence. The EuroLeague publishes the
+transition and on putbacks, for each team and allowed by each defense. The EuroLeague publishes the
 point totals; the per-possession rates and the defensive side are not public. Reading:
 [Cleaning the Glass, play context](https://cleaningtheglass.com/stats/guide/league_context).
 
@@ -61,7 +63,7 @@ point totals; the per-possession rates and the defensive side are not public. Re
 rim, short and long mid-range, corner and above-the-break threes, as shares of attempts and as
 accuracy. Complete from 2015-16, when the shot feed covers every field goal.
 
-**How much a defence controls opponent three-point shooting.** In college and NBA data, a defence
+**How much a defense controls opponent three-point shooting.** In college and NBA data, a defense
 controls how many threes it allows far more than how many go in, and opponent three-point percentage
 barely repeats from season to season. Both halves can be tested here: allowed three-point rate and
 allowed percentage, split-half and year to year, for twenty seasons. If the result holds, it also
@@ -69,11 +71,11 @@ says how much of a team's defensive rating is luck. Tested here, and it holds: o
 attempt rate repeats well (split-half about 0.72), while opponent three-point percentage allowed is
 close to noise (about 0.16). Luck-adjusting a defensive rating, replacing the opponents' made threes and
 free throws with their expected rate, lifts the stability of that rating (split-half 0.56 to 0.65) while
-barely changing net rating. A defence controls the shots it allows far more than whether they fall, so
+barely changing net rating. A defense controls the shots it allows far more than whether they fall, so
 the honest version credits suppressed attempts, not forced misses. Reading:
 [KenPom, one last post on 3P defense](https://kenpom.com/blog/one-last-post-on-3p-defense/).
 
-**Offensive rebounding against transition defence.** Sending players to the glass wins second
+**Offensive rebounding against transition defense.** Sending players to the glass wins second
 chances and gives up fast breaks. The play-by-play shows both sides of that trade for every team:
 offensive rebound rate after its own misses, and the opponent's transition efficiency on the
 possessions that follow a defensive rebound. Reading:
@@ -187,7 +189,7 @@ Quarterly Journal of Economics (2010), for the method of isolating a referee's o
 **Team style and style matchups.** The roles work clusters players; teams can be clustered the same way,
 from their four factors, pace and shot profile, into playing styles: pace-and-space, half-court grind,
 switch-and-press, offensive-glass. Then the question a coach actually asks, do styles beat styles beyond
-raw rating. Whether a fast team underperforms its net rating against the best half-court defences, read
+raw rating. Whether a fast team underperforms its net rating against the best half-court defenses, read
 as the residual of game outcomes after both teams' strength is taken out, is a matchup effect no
 EuroLeague metric models. Reading:
 [Basketball Analytics Lab, exploring competitive dynamics across European basketball leagues](https://basketballanalyticslab.substack.com/p/exploring-competitive-dynamics-across).
@@ -196,6 +198,12 @@ EuroLeague metric models. Reading:
 defy their ratings repeatedly, one club beating another by more than strength predicts year after year,
 and whether that persistence is real or the noise of small samples. The same split-half and year-to-year
 tests used elsewhere decide it.
+
+
+
+**Seasonality of team rate stats.** Read as time series across a season, the rate stats were charted against the calendar and the schedule. Offenses open the year cold and warm into spring with pace flat, home advantage is large and mostly survived the empty-arena seasons so it is not really the crowd, referees leave a real signature on the whistle, and rest, schedule congestion and travel show almost no fatigue, with a team's night-to-night efficiency close to noise and no carry between games. Little genuine future work remains beyond a calendar cut around the known breaks and the newest expanded schedule. Reading: the time-series references in the design bibliography.
+
+**Efficiency frontiers for lineups and teams.** A stochastic-frontier or data-envelopment view measures how far a unit sits below the best output its inputs could yield. A first pass fit it to team-season box totals and found the efficiency it returns overlaps heavily with offensive rating and adds almost nothing to predicting the next season, so it reads as a team stat that largely restates the net-rating view already in hand. Little future work remains. Reading: the efficiency references (Charnes, Cooper & Rhodes; Aigner, Lovell & Schmidt) in the design bibliography.
 
 ## End of games, clutch and strategy
 
@@ -256,6 +264,10 @@ built on the game state rather than a margin rule. Reading:
 [*Bayesian estimation of in-game home team win probability for NBA games*](https://arxiv.org/abs/2207.05114);
 Deshpande & Jensen,
 [*Estimating an NBA Player's Impact on His Team's Chances of Winning*](https://arxiv.org/abs/1604.03186) (2016).
+
+
+
+**A win-probability model and a leverage index.** An in-game win-probability model, the lead treated as a random walk toward the buzzer, gives the chance each side wins from the score and the clock, and a leverage index falls out of it, how much a single possession can swing that chance. A first pass fit and calibrated one to the EuroLeague and used it to read clutch three ways, by leverage, the NBA box of the last five minutes within five, and a derived band for games genuinely in doubt: clutch performance did not repeat from one season to the next under any of the three, the same verdict the sabermetric literature reached long ago. The model is worth keeping for its own sake, and it sharpens most with a team-strength prior, where the summed-FPM roster clearly beat a results-based Elo; the real next steps are the live, causal form of that prior and a proper in-game view. Reading: Stern (1994) and Tango, Lichtman & Dolphin (2007), in the design bibliography.
 
 ## Lineups and on/off
 
@@ -320,11 +332,15 @@ Franks, Miller, Bornn & Goldsberry,
 starting five, and how both relate to results, early in the season especially. Reading:
 [Basketball-Reference, team continuity](https://www.basketball-reference.com/blog/indexca63.html?p=3277).
 
+
+
+**Passing-network motifs.** A team's assists form a directed network, and its triad census is a style fingerprint the box score cannot give, the reciprocal triangles of a motion offense against the one-way chains of a hub. A first pass found the share of complete, mutual triangles tracks offensive rating positively and holds across more than a decade, while one-way chains run the other way, though these are within-season team correlations and noisy. It reads as a scouting and style tool rather than a rating input; the open end is tying the fingerprints to actual results and to the ball-flow bottleneck of the same network. Reading: Fewell et al. (2012), in the design bibliography.
+
 ## Players
 
 **Ben Taylor's box metrics.** Three measures, all computable from the box score:
 - Box Creation, an estimate of open shots created for teammates;
-- Offensive Load, a player's share of the offence including playmaking;
+- Offensive Load, a player's share of the offense including playmaking;
 - Passer Rating, which also needs the share of a player's assists that lead to layups (the
   play-by-play links each assist to its shot).
 
@@ -347,7 +363,7 @@ Carta & Favero,
 **Shooting above expected.** The expected-points code the model no longer uses, turned into a
 description. Points per shot are split into shot quality (where a player shoots from, valued at
 league rates) and shot making (how far above those rates he hits), for players and teams and on
-defence. A shooter-specific version, where each player's expected rate is pooled toward the league,
+defense. A shooter-specific version, where each player's expected rate is pooled toward the league,
 is the better tool here. Reading:
 [*Expected Points Above Average*](https://arxiv.org/abs/2405.10453) (2025);
 Cervone, D'Amour, Bornn & Goldsberry, [*POINTWISE*](https://arxiv.org/abs/1408.0777) (2014), the
@@ -404,7 +420,7 @@ leaderboard and with HackaStat's role labels. Reading:
 Gencoglu, [*The Analytics Behind EuroLeague Success*](https://gencoglumur.substack.com/p/the-analytics-behind-euroleague-success) (2026).
 
 **Careers and aging.** A career page for every player, with FPM season by season. The aging curve
-by position and by skill: shooting, rebounding and defence may peak and fade at different ages. The
+by position and by skill: shooting, rebounding and defense may peak and fade at different ages. The
 model fits one aging curve; this would show several. Reading:
 Vaci, Cocić, Gula & Bilalić,
 [*Large data and Bayesian modeling: aging curves of NBA players*](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6690864/) (2019).
@@ -449,6 +465,10 @@ nearest thing to injury data the EuroLeague provides.
 **Fantasy projections.** The EuroLeague fantasy game scores players by PIR, so projected minutes
 times PIR per minute, adjusted for opponent and venue, is a fantasy projection. Reading:
 [Dunkest, EuroLeague Fantasy 2026-27](https://www.dunkest.com/en/euroleague/news/fantasy-basketball/244469/euroleague-fantasy-2026-27-minutes-roles-and-schedule).
+
+
+
+**Spatial structure of the shot chart.** The shot coordinates make a spatial dataset, and spatial-econometric tools measure clustering and spillover in shot efficiency across the floor. A first pass found the made-rate surface strongly and significantly spatially autocorrelated, but most of that is radial, falling with distance from the basket, and a two-dimensional model did not beat a plain distance model out of sample, the one real non-radial signal being the familiar corner-three lift. It fits the expected-points result the notes already record, a real description of the floor that did not improve the rating, so it stands as a descriptive shot-chart tool. Reading: Moran (1950) and Anselin (1988), in the design bibliography.
 
 ## Forecasting
 
@@ -550,24 +570,24 @@ run thin on this data. Reading: LUMA Basketball Research,
 [*HAPM: Held-Out Adjusted Plus-Minus*](https://lumahoops.github.io/hapm/) (2026).
 
 **Build the defensive rating from the four factors.** FPM fits its defensive side on net points, the
-opponent's points per 100 with a lineup on the floor, which bundles what the defence actually did
+opponent's points per 100 with a lineup on the floor, which bundles what the defense actually did
 together with the opponent's shooting luck into one noisy number. The alternative is to fit four
 defensive RAPMs instead, one each for how a lineup suppresses opponent shooting, forces turnovers,
 holds the defensive glass and keeps teams off the line, then recombine them with the usual four-factor
 weights. Estimating the stable parts on their own and reassembling them throws away the free-throw and
 opponent-shooting noise the single net-points fit swallows whole. Tried on the stints here, the
-four-factor build forecast next-season defence about four times better than the net-points on/off, by a
+four-factor build forecast next-season defense about four times better than the net-points on/off, by a
 wide margin and in every season pair tested, the largest defensive edge measured so far, and it lands on
-the perimeter-defence limit the design notes admit. Two things keep it short of a finished answer: it was
+the perimeter-defense limit the design notes admit. Two things keep it short of a finished answer: it was
 single-season RAPM on its own, so the edge would shrink inside the full pipeline where the prior and
 recency already do some of that de-noising, and the four-factor weights were the textbook ones rather
 than fit to this league. Reading: the Six-Factor RAPM and LUMA HAPM in the design bibliography, which
-split defence by factor and flag opponent shooting as the piece that swings most with luck.
+split defense by factor and flag opponent shooting as the piece that swings most with luck.
 
 ## Would need data that is not here
 
 - **Tracking data** (positions of all ten players and the ball): possession value as in POINTWISE,
-  spatial defence, screens, contests, passes that are not assists. Not public for the EuroLeague.
+  spatial defense, screens, contests, passes that are not assists. Not public for the EuroLeague.
 - **Injury reports:** availability before a game, and the reason for an absence.
 - **Domestic league games:** true rest and workload, since most players play two or three games a
   week across competitions.
