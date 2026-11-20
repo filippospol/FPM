@@ -549,6 +549,21 @@ year from a domestic league or the NBA with no EuroLeague history, so the trick 
 run thin on this data. Reading: LUMA Basketball Research,
 [*HAPM: Held-Out Adjusted Plus-Minus*](https://lumahoops.github.io/hapm/) (2026).
 
+**Build the defensive rating from the four factors.** FPM fits its defensive side on net points, the
+opponent's points per 100 with a lineup on the floor, which bundles what the defence actually did
+together with the opponent's shooting luck into one noisy number. The alternative is to fit four
+defensive RAPMs instead, one each for how a lineup suppresses opponent shooting, forces turnovers,
+holds the defensive glass and keeps teams off the line, then recombine them with the usual four-factor
+weights. Estimating the stable parts on their own and reassembling them throws away the free-throw and
+opponent-shooting noise the single net-points fit swallows whole. Tried on the stints here, the
+four-factor build forecast next-season defence about four times better than the net-points on/off, by a
+wide margin and in every season pair tested, the largest defensive edge measured so far, and it lands on
+the perimeter-defence limit the design notes admit. Two things keep it short of a finished answer: it was
+single-season RAPM on its own, so the edge would shrink inside the full pipeline where the prior and
+recency already do some of that de-noising, and the four-factor weights were the textbook ones rather
+than fit to this league. Reading: the Six-Factor RAPM and LUMA HAPM in the design bibliography, which
+split defence by factor and flag opponent shooting as the piece that swings most with luck.
+
 ## Would need data that is not here
 
 - **Tracking data** (positions of all ten players and the ball): possession value as in POINTWISE,
