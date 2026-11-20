@@ -274,3 +274,15 @@ varies with team strength might fit better; it has not been tested here.
 does reach a single-season rating; the box-score anchor and the offensive shrink soften it rather than
 take it out. Opponent free-throw variance, loose-ball and foul-call luck, and small-sample schedule luck
 aren't modeled either.
+
+**The out-of-sample margins are noisier than they look.** Every number in the next-season test is an
+average over a handful of season pairs, and those pairs are far from independent: scored season by
+season, the same comparison swings by about a third of its own size depending only on which years it
+lands on. A small gap between two versions of the model, under roughly half a point per 100, therefore
+sits inside that band and should not be read as a real difference. Several of the model's constants were
+also tuned on much the same season pairs the model is then scored on, which can flatter the numbers. A
+walk-forward check, choosing each setting only from seasons before the one it is tested on, clears the
+regularization: the penalty and recency settings are stable across eras and carry no head start. It does
+not yet cover the more discretionary choices, which features enter the prior and which model form is
+kept, where tuning against the test seasons would bite hardest. The large edges hold well outside the
+band; the marginal ones are better read as ties.
